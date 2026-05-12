@@ -57,48 +57,61 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             )}
             {selectedTenant && (
               <>
-                <Link
-                  to={`/tenants/${selectedTenant.id}/policies`}
-                  className={location.pathname.includes('/policies') ? 'active' : ''}
-                >
-                  Policies
-                </Link>
-                <Link
-                  to={`/tenants/${selectedTenant.id}/permissions`}
-                  className={location.pathname.includes('/permissions') ? 'active' : ''}
-                >
-                  Permissions
-                </Link>
-                <Link
-                  to={`/tenants/${selectedTenant.id}/roles`}
-                  className={location.pathname.includes('/roles') ? 'active' : ''}
-                >
-                  Roles
-                </Link>
-                <Link
-                  to={`/tenants/${selectedTenant.id}/resource-groups`}
-                  className={location.pathname.includes('/resource-groups') ? 'active' : ''}
-                >
-                  Resource Groups
-                </Link>
-                <Link
-                  to={`/tenants/${selectedTenant.id}/resources`}
-                  className={location.pathname.includes('/resources') ? 'active' : ''}
-                >
-                  Resources
-                </Link>
-                <Link
-                  to={`/tenants/${selectedTenant.id}/grants`}
-                  className={location.pathname.includes('/grants') ? 'active' : ''}
-                >
-                  Grants
-                </Link>
-                <Link
-                  to={`/tenants/${selectedTenant.id}/test`}
-                  className={location.pathname.includes('/test') ? 'active' : ''}
-                >
-                  Test Policy
-                </Link>
+                {isSubjectAdmin ? (
+                  <>
+                    <Link
+                      to={`/tenants/${selectedTenant.id}/policies`}
+                      className={location.pathname.includes('/policies') ? 'active' : ''}
+                    >
+                      Policies
+                    </Link>
+                    <Link
+                      to={`/tenants/${selectedTenant.id}/permissions`}
+                      className={location.pathname.includes('/permissions') ? 'active' : ''}
+                    >
+                      Permissions
+                    </Link>
+                    <Link
+                      to={`/tenants/${selectedTenant.id}/roles`}
+                      className={location.pathname.includes('/roles') ? 'active' : ''}
+                    >
+                      Roles
+                    </Link>
+                    <Link
+                      to={`/tenants/${selectedTenant.id}/resource-groups`}
+                      className={location.pathname.includes('/resource-groups') ? 'active' : ''}
+                    >
+                      Resource Groups
+                    </Link>
+                    <Link
+                      to={`/tenants/${selectedTenant.id}/resources`}
+                      className={location.pathname.includes('/resources') ? 'active' : ''}
+                    >
+                      Resources
+                    </Link>
+                    <Link
+                      to={`/tenants/${selectedTenant.id}/grants`}
+                      className={location.pathname.includes('/grants') ? 'active' : ''}
+                    >
+                      Grants
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to={`/tenants/${selectedTenant.id}/grants`}
+                      className={location.pathname.includes('/grants') ? 'active' : ''}
+                    >
+                      Grants
+                    </Link>
+                    <Link
+                      to={`/tenants/${selectedTenant.id}/test`}
+                      className={location.pathname.includes('/test') ? 'active' : ''}
+                    >
+                      Test Policy
+                    </Link>
+                  </>
+                )}
                 <span className="tenant-indicator">
                   {selectedTenant.name}
                 </span>

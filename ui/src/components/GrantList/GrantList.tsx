@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTenant } from '../../context/TenantContext';
-import { grantApi, subjectApi, roleApi, resourceGroupApi, resourceApi as resourceServiceApi } from '../../services/api';
-import { Grant, Subject, Role, ResourceGroup, Resource } from '../../types';
+import { useSubject } from '../../context/SubjectContext';
+import { grantApi, subjectApi, roleApi, resourceGroupApi, resourceApi as resourceServiceApi, tenantApi } from '../../services/api';
+import { Grant, Subject, Role, ResourceGroup, Resource, Tenant } from '../../types';
 import './GrantList.css';
 
 interface GrantFormData {
@@ -23,11 +24,14 @@ interface PathOption {
 const GrantList: React.FC = () => {
   const { tenantId } = useParams<{ tenantId: string }>();
   const { selectedTenant } = useTenant();
+  const { selectedSubject } = useSubject();
   const [grants, setGrants] = useState<Grant[]>([]);
+  const [allGrants, setAllGrants] = useState<Grant[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [resourceGroups, setResourceGroups] = useState<ResourceGroup[]>([]);
   const [resources, setResources] = useState<Resource[]>([]);
+  const [tenants, setTenants] = useState<Tenant[]>([]);
   const [pathOptions, setPathOptions] = useState<PathOption[]>([]);
   const [pathSearchTerm, setPathSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
@@ -42,6 +46,10 @@ const GrantList: React.FC = () => {
   const pathSelectorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    loadTenants();
+  }, []);
+
+  useEffect(() => {
     if (selectedTenant) {
       loadGrants();
       loadSubjects();
@@ -51,12 +59,37 @@ const GrantList: React.FC = () => {
     }
   }, [selectedTenant]);
 
+  const loadTenants = async () => {
+    try {
+      const data = await tenantApi.getAll();
+      setTenants(data);
+    } catch (err) {
+      console.error('Failed to load tenants:', err);
+    }
+  };
+
+  const isSubjectAdmin = selectedSubject
+    ? tenants.some(t => t.admin_uid === selectedSubject.uid)
+    : false;
+
   const loadGrants = async () => {
     if (!selectedTenant) return;
     try {
       setLoading(true);
       const data = await grantApi.getByTenant(selectedTenant.id);
-      setGrants(data);
+      setAllGrants(data);
+
+      // Filter grants based on admin status
+      if (isSubjectAdmin) {
+        setGrants(data);
+      } else if (selectedSubject) {
+        // Non-admin subjects only see their own grants
+        const subjectGrants = data.filter(g => g.subject_uid === selectedSubject.uid);
+        setGrants(subjectGrants);
+      } else {
+        setGrants([]);
+      }
+
       setError(null);
     } catch (err) {
       setError('Failed to load grants');
@@ -181,6 +214,17 @@ const GrantList: React.FC = () => {
 
   const handleDelete = async (uid: string) => {
     if (!selectedTenant) return;
+
+    // Check if user can delete this grant
+    const grant = allGrants.find(g => g.uid === uid);
+    if (!grant) return;
+
+    // Admins can delete any grant, subjects can only delete their own
+    if (!isSubjectAdmin && grant.subject_uid !== selectedSubject?.uid) {
+      setError('You can only delete your own grants');
+      return;
+    }
+
     if (!window.confirm('Are you sure you want to delete this grant?')) return;
 
     try {
@@ -233,7 +277,7 @@ const GrantList: React.FC = () => {
 
       {error && <div className="error">{error}</div>}
 
-      {!showForm && (
+      {!showForm && isSubjectAdmin && (
         <div className="grant-header">
           <button className="button button-primary" onClick={() => setShowForm(true)}>
             Add Grant
@@ -375,12 +419,16 @@ const GrantList: React.FC = () => {
                   <div>Role: {getRoleName(grant.role_uid)}</div>
                 </div>
                 <div className="grant-actions">
-                  <button className="button button-primary" onClick={() => handleEdit(grant)}>
-                    Edit
-                  </button>
-                  <button className="button button-danger" onClick={() => handleDelete(grant.uid)}>
-                    Delete
-                  </button>
+                  {isSubjectAdmin && (
+                    <button className="button button-primary" onClick={() => handleEdit(grant)}>
+                      Edit
+                    </button>
+                  )}
+                  {(isSubjectAdmin || grant.subject_uid === selectedSubject?.uid) && (
+                    <button className="button button-danger" onClick={() => handleDelete(grant.uid)}>
+                      Delete
+                    </button>
+                  )}
                 </div>
               </div>
             );

@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { evaluationApi, subjectApi } from '../../services/api';
+import { evaluationApi, subjectApi, tenantApi } from '../../services/api';
 import { useTenant } from '../../context/TenantContext';
-import { Subject, PolicyEvaluationRequest, PolicyEvaluationResponse } from '../../types';
+import { useSubject } from '../../context/SubjectContext';
+import { Subject, PolicyEvaluationRequest, PolicyEvaluationResponse, Tenant } from '../../types';
 import './PolicyTest.css';
 
 const PolicyTest: React.FC = () => {
   const { tenantId } = useParams<{ tenantId: string }>();
   const { selectedTenant } = useTenant();
+  const { selectedSubject } = useSubject();
   const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<PolicyEvaluationResponse | null>(null);
@@ -21,8 +24,29 @@ const PolicyTest: React.FC = () => {
   });
 
   useEffect(() => {
+    loadTenants();
     loadSubjects();
   }, []);
+
+  useEffect(() => {
+    // Pre-select the current subject if not an admin
+    if (selectedSubject && !isSubjectAdmin) {
+      setFormData(prev => ({ ...prev, subjectUid: selectedSubject.uid }));
+    }
+  }, [selectedSubject, isSubjectAdmin]);
+
+  const loadTenants = async () => {
+    try {
+      const data = await tenantApi.getAll();
+      setTenants(data);
+    } catch (err) {
+      console.error('Failed to load tenants:', err);
+    }
+  };
+
+  const isSubjectAdmin = selectedSubject
+    ? tenants.some(t => t.admin_uid === selectedSubject.uid)
+    : false;
 
   const loadSubjects = async () => {
     try {
@@ -69,19 +93,29 @@ const PolicyTest: React.FC = () => {
       <form onSubmit={handleEvaluate} className="test-form">
         <div className="form-group">
           <label>Subject:</label>
-          <select
-            value={formData.subjectUid}
-            onChange={(e) => setFormData({ ...formData, subjectUid: e.target.value })}
-            className="input"
-            required
-          >
-            <option value="">Select a subject</option>
-            {subjects.map((subject) => (
-              <option key={subject.uid} value={subject.uid}>
-                {subject.username} ({subject.name})
-              </option>
-            ))}
-          </select>
+          {isSubjectAdmin ? (
+            <select
+              value={formData.subjectUid}
+              onChange={(e) => setFormData({ ...formData, subjectUid: e.target.value })}
+              className="input"
+              required
+            >
+              <option value="">Select a subject</option>
+              {subjects.map((subject) => (
+                <option key={subject.uid} value={subject.uid}>
+                  {subject.username} ({subject.name})
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              type="text"
+              value={selectedSubject ? `${selectedSubject.username} (${selectedSubject.name})` : ''}
+              className="input"
+              disabled
+              readOnly
+            />
+          )}
         </div>
 
         <div className="form-row">
