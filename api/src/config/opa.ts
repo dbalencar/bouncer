@@ -1,5 +1,8 @@
 // Simplified policy evaluation for demo
 // In production, this would use OPA WASM with compiled Rego policies
+// TODO: Implement real OPA WASM integration with @open-policy-agent/opa-wasm package
+// TODO: Add Rego policy compilation to WASM format
+// TODO: Implement policy caching for performance optimization
 
 let policies: string[] = [];
 
