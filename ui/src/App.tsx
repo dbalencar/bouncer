@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { TenantProvider } from './context/TenantContext';
 import { SubjectProvider } from './context/SubjectContext';
 import Layout from './components/Layout/Layout';
+import Home from './components/Home/Home';
 import TenantList from './components/TenantList/TenantList';
 import PolicyList from './components/PolicyList/PolicyList';
 import PolicyTest from './components/PolicyTest/PolicyTest';
@@ -22,7 +23,7 @@ function App() {
         <SubjectProvider>
           <Layout>
             <Routes>
-              <Route path="/" element={<SubjectList />} />
+              <Route path="/" element={<Home />} />
               <Route path="/tenants" element={<TenantList />} />
               <Route path="/tenants/:tenantId/policies" element={<PolicyList />} />
               <Route path="/tenants/:tenantId/permissions" element={<PermissionList />} />

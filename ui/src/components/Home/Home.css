@@ -1,0 +1,21 @@
+.home {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+}
+
+.home-content {
+  text-align: center;
+  color: #fff;
+}
+
+.home-content h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.home-content p {
+  font-size: 1.25rem;
+  color: #888;
+}

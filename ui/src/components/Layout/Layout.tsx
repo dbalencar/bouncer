@@ -4,7 +4,6 @@ import { useTenant } from '../../context/TenantContext';
 import { useSubject } from '../../context/SubjectContext';
 import { subjectApi } from '../../services/api';
 import { Subject } from '../../types';
-import { config } from '../../config';
 import './Layout.css';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -17,9 +16,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (config.demoMode) {
-      loadSubjects();
-    }
+    loadSubjects();
   }, []);
 
   useEffect(() => {
@@ -72,31 +69,20 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <div className="header-right">
             {selectedSubject ? (
               <>
-                <div className="subject-indicator">
-                  {selectedSubject.username}
-                </div>
-                <button onClick={handleLogout} className="logout-button">
-                  Logout
-                </button>
+                <span className="subject-indicator">{selectedSubject.username}</span>
+                <button onClick={handleLogout} className="logout-button">Logout</button>
               </>
             ) : (
               <div className="subject-dropdown" ref={dropdownRef}>
-                <button
-                  className="dropdown-button"
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                >
+                <button className="dropdown-button" onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
                   Login
                 </button>
                 {isDropdownOpen && (
                   <div className="dropdown-menu">
                     {isLoadingSubjects ? (
-                      <div className="dropdown-item" style={{ cursor: 'default' }}>
-                        Loading...
-                      </div>
+                      <div className="dropdown-item">Loading...</div>
                     ) : subjects.length === 0 ? (
-                      <div className="dropdown-item" style={{ cursor: 'default' }}>
-                        No subjects available
-                      </div>
+                      <div className="dropdown-item">No subjects available</div>
                     ) : (
                       subjects.map((subject) => (
                         <button
