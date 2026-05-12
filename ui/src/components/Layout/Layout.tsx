@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTenant } from '../../context/TenantContext';
 import { useSubject } from '../../context/SubjectContext';
@@ -13,27 +13,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [isLoadingSubjects, setIsLoadingSubjects] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     loadSubjects();
   }, []);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
-      }
-    };
-
-    if (isDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isDropdownOpen]);
 
   const loadSubjects = async () => {
     setIsLoadingSubjects(true);
@@ -66,19 +49,29 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <h1 className="logo">
             <Link to="/">Bouncer</Link>
           </h1>
-          <div className="header-right">
+          <div className="header-right" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             {selectedSubject ? (
               <>
                 <span className="subject-indicator">{selectedSubject.username}</span>
-                <button onClick={handleLogout} className="logout-button">Logout</button>
+                <button
+                  onClick={handleLogout}
+                  className="logout-button"
+                  style={{ padding: '0.5rem 1rem', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                >
+                  Logout
+                </button>
               </>
             ) : (
-              <div className="subject-dropdown" ref={dropdownRef}>
-                <button className="dropdown-button" onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
+              <>
+                <button
+                  className="dropdown-button"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  style={{ display: 'inline-block', padding: '0.5rem 1rem', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                >
                   Login
                 </button>
                 {isDropdownOpen && (
-                  <div className="dropdown-menu">
+                  <div className="dropdown-menu" style={{ position: 'absolute', top: '100%', right: 0, backgroundColor: '#2a2a2a', border: '1px solid #444', borderRadius: '4px', minWidth: '150px', zIndex: 1000, marginTop: '0.5rem' }}>
                     {isLoadingSubjects ? (
                       <div className="dropdown-item">Loading...</div>
                     ) : subjects.length === 0 ? (
@@ -89,6 +82,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                           key={subject.uid}
                           className="dropdown-item"
                           onClick={() => handleLogin(subject)}
+                          style={{ display: 'block', width: '100%', padding: '0.5rem 1rem', background: 'none', border: 'none', color: '#fff', textAlign: 'left', cursor: 'pointer' }}
                         >
                           {subject.username}
                         </button>
@@ -96,7 +90,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     )}
                   </div>
                 )}
-              </div>
+              </>
             )}
           </div>
         </div>
