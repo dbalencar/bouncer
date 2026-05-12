@@ -115,3 +115,23 @@
 .button-danger:hover {
   background-color: #c82333;
 }
+
+.button-success {
+  background-color: #28a745;
+  color: white;
+}
+
+.button-success:hover {
+  background-color: #218838;
+}
+
+.request-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.request-actions .button {
+  margin-top: 0;
+  flex: 1;
+}
