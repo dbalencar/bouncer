@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { tenantApi, subjectApi } from '../../services/api';
 import { useTenant } from '../../context/TenantContext';
@@ -12,12 +12,28 @@ const TenantList: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [newTenantName, setNewTenantName] = useState('');
   const [selectedAdminUid, setSelectedAdminUid] = useState('');
+  const [subjectSearchTerm, setSubjectSearchTerm] = useState('');
+  const subjectSelectorRef = useRef<HTMLDivElement>(null);
   const { setTenant } = useTenant();
   const navigate = useNavigate();
 
   useEffect(() => {
     loadTenants();
     loadSubjects();
+  }, []);
+
+  useEffect(() => {
+    // Close dropdown when clicking outside
+    const handleClickOutside = (event: MouseEvent) => {
+      if (subjectSelectorRef.current && !subjectSelectorRef.current.contains(event.target as Node)) {
+        setSubjectSearchTerm('');
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   const loadTenants = async () => {
@@ -55,6 +71,7 @@ const TenantList: React.FC = () => {
       await tenantApi.create(newTenantName, selectedAdminUid);
       setNewTenantName('');
       setSelectedAdminUid('');
+      setSubjectSearchTerm('');
       loadTenants();
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to create tenant');
@@ -85,6 +102,12 @@ const TenantList: React.FC = () => {
     return subject ? subject.username : 'Unknown';
   };
 
+  const getSelectedSubjectDisplay = () => {
+    if (!selectedAdminUid) return '';
+    const subject = subjects.find(s => s.uid === selectedAdminUid);
+    return subject ? `${subject.username} (${subject.email})` : '';
+  };
+
   if (loading) return <div className="loading">Loading...</div>;
 
   return (
@@ -101,19 +124,62 @@ const TenantList: React.FC = () => {
           placeholder="New tenant name"
           className="input"
         />
-        <select
-          value={selectedAdminUid}
-          onChange={(e) => setSelectedAdminUid(e.target.value)}
-          className="input"
-          required
-        >
-          <option value="">Select admin subject</option>
-          {subjects.map(subject => (
-            <option key={subject.uid} value={subject.uid}>
-              {subject.username} ({subject.email})
-            </option>
-          ))}
-        </select>
+        <div className="subject-selector" ref={subjectSelectorRef}>
+          <input
+            type="text"
+            className="input"
+            value={subjectSearchTerm || getSelectedSubjectDisplay()}
+            onChange={(e) => {
+              setSubjectSearchTerm(e.target.value);
+              setSelectedAdminUid('');
+            }}
+            placeholder="Search by username, name, or email..."
+            required
+          />
+          {subjectSearchTerm && (
+            <div className="subject-dropdown">
+              {subjects
+                .filter(subject => {
+                  const searchTerm = subjectSearchTerm.toLowerCase();
+                  return (
+                    subject.username.toLowerCase().includes(searchTerm) ||
+                    subject.name.toLowerCase().includes(searchTerm) ||
+                    subject.email.toLowerCase().includes(searchTerm)
+                  );
+                })
+                .slice(0, 10)
+                .map(subject => (
+                  <div
+                    key={subject.uid}
+                    className="subject-dropdown-item"
+                    onClick={() => {
+                      setSelectedAdminUid(subject.uid);
+                      setSubjectSearchTerm('');
+                    }}
+                  >
+                    <div className="subject-dropdown-info">
+                      <span className="subject-dropdown-username">{subject.username}</span>
+                      <span className="subject-dropdown-details">
+                        {subject.name} • {subject.email}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              {subjects.filter(subject => {
+                const searchTerm = subjectSearchTerm.toLowerCase();
+                return (
+                  subject.username.toLowerCase().includes(searchTerm) ||
+                  subject.name.toLowerCase().includes(searchTerm) ||
+                  subject.email.toLowerCase().includes(searchTerm)
+                );
+              }).length === 0 && (
+                <div className="subject-dropdown-item no-results">
+                  No matches found
+                </div>
+              )}
+            </div>
+          )}
+        </div>
         <button type="submit" className="button">Create Tenant</button>
       </form>
 
