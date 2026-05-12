@@ -2,10 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTenant } from '../../context/TenantContext';
 import { useSubject } from '../../context/SubjectContext';
-import { tenantApi, grantApi, grantRequestApi } from '../../services/api';
-import { Tenant, Grant, GrantRequest } from '../../types';
-import GrantRequestList from '../GrantRequestList/GrantRequestList';
-import GrantRequestForm from '../GrantRequestForm/GrantRequestForm';
+import { tenantApi, grantApi } from '../../services/api';
+import { Tenant, Grant } from '../../types';
 import './Me.css';
 
 interface TenantWithAccess extends Tenant {
@@ -15,22 +13,36 @@ interface TenantWithAccess extends Tenant {
 
 const Me: React.FC = () => {
   const [allTenants, setAllTenants] = useState<TenantWithAccess[]>([]);
-  const [currentTenantGrants, setCurrentTenantGrants] = useState<Grant[]>([]);
-  const [showRequestForm, setShowRequestForm] = useState(false);
+  const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
   const { selectedTenant, setTenant } = useTenant();
   const { selectedSubject } = useSubject();
   const navigate = useNavigate();
 
   useEffect(() => {
+    loadTenants();
     loadAllTenants();
   }, [selectedSubject]);
 
   useEffect(() => {
-    if (selectedTenant && selectedSubject) {
-      loadCurrentTenantGrants();
+    // Redirect non-admin subjects to /access when they select a tenant
+    if (selectedTenant && selectedSubject && !isSubjectAdmin) {
+      navigate('/access');
     }
-  }, [selectedTenant, selectedSubject]);
+  }, [selectedTenant, selectedSubject, isSubjectAdmin, navigate]);
+
+  const loadTenants = async () => {
+    try {
+      const data = await tenantApi.getAll();
+      setTenants(data);
+    } catch (err) {
+      console.error('Failed to load tenants:', err);
+    }
+  };
+
+  const isSubjectAdmin = selectedSubject
+    ? tenants.some(t => t.admin_uid === selectedSubject.uid)
+    : false;
 
   const loadAllTenants = async () => {
     if (!selectedSubject) {
@@ -41,10 +53,10 @@ const Me: React.FC = () => {
 
     try {
       setLoading(true);
-      const tenants = await tenantApi.getAll();
+      const tenantsData = await tenantApi.getAll();
       const tenantsWithAccessData: TenantWithAccess[] = [];
 
-      for (const tenant of tenants) {
+      for (const tenant of tenantsData) {
         try {
           const grants = await grantApi.getBySubject(tenant.id, selectedSubject.uid);
           tenantsWithAccessData.push({
@@ -78,42 +90,13 @@ const Me: React.FC = () => {
     }
   };
 
-  const loadCurrentTenantGrants = async () => {
-    if (!selectedTenant || !selectedSubject) {
-      setCurrentTenantGrants([]);
-      return;
-    }
-
-    try {
-      const grants = await grantApi.getBySubject(selectedTenant.id, selectedSubject.uid);
-      setCurrentTenantGrants(grants);
-    } catch (err) {
-      console.error('Failed to load current tenant grants:', err);
-    }
-  };
-
   const handleManageTenant = (tenant: Tenant) => {
     setTenant(tenant);
-    navigate(`/tenants/${tenant.id}/policies`);
-  };
-
-  const handleRemoveGrant = async (grantUid: string) => {
-    if (!selectedTenant) return;
-    if (!window.confirm('Are you sure you want to remove this grant?')) return;
-
-    try {
-      await grantApi.delete(selectedTenant.id, grantUid);
-      loadCurrentTenantGrants();
-      loadAllTenants();
-    } catch (err) {
-      console.error('Failed to remove grant:', err);
-    }
-  };
-
-  const handleRequestCreated = () => {
-    if (selectedSubject && selectedTenant) {
-      loadCurrentTenantGrants();
-      loadAllTenants();
+    // Non-admins go to /access, admins go to policies
+    if (isSubjectAdmin) {
+      navigate(`/tenants/${tenant.id}/policies`);
+    } else {
+      navigate('/access');
     }
   };
 
@@ -148,83 +131,7 @@ const Me: React.FC = () => {
         )}
       </div>
 
-      <div className="context-card">
-        <h3>Selected Tenant</h3>
-        {selectedTenant ? (
-          <div className="context-info">
-            <p><strong>Name:</strong> {selectedTenant.name}</p>
-            <p><strong>Schema:</strong> {selectedTenant.schema_name}</p>
-            <p><strong>ID:</strong> {selectedTenant.id}</p>
-          </div>
-        ) : (
-          <p className="no-context">No tenant selected</p>
-        )}
-      </div>
 
-      {selectedTenant && selectedSubject && (
-        <>
-          <div className="context-card">
-            <GrantRequestList
-              schemaName={selectedTenant.schema_name}
-              subjectUid={selectedSubject.uid}
-              onRequestCreated={handleRequestCreated}
-            />
-          </div>
-
-          <div className="context-card">
-            <h3>Current Grants</h3>
-            {currentTenantGrants.length === 0 ? (
-              <p className="no-context">You have no grants in this tenant.</p>
-            ) : (
-              <div className="grant-grid">
-                {currentTenantGrants.map((grant) => (
-                  <div key={grant.uid} className="grant-card">
-                    <p><strong>Path:</strong> {grant.path}</p>
-                    <p><strong>Role UID:</strong> {grant.role_uid}</p>
-                    <button
-                      onClick={() => handleRemoveGrant(grant.uid)}
-                      className="button button-danger"
-                    >
-                      Remove Grant
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="context-card">
-            {showRequestForm ? (
-              <>
-                <div className="form-header">
-                  <h3>Request New Grant</h3>
-                  <button
-                    onClick={() => setShowRequestForm(false)}
-                    className="button"
-                  >
-                    Cancel
-                  </button>
-                </div>
-                <GrantRequestForm
-                  schemaName={selectedTenant.schema_name}
-                  subjectUid={selectedSubject.uid}
-                  onRequestCreated={() => {
-                    handleRequestCreated();
-                    setShowRequestForm(false);
-                  }}
-                />
-              </>
-            ) : (
-              <button
-                onClick={() => setShowRequestForm(true)}
-                className="button button-primary"
-              >
-                Request New Grant
-              </button>
-            )}
-          </div>
-        </>
-      )}
 
       <div className="context-card">
         <h3>All Tenants</h3>

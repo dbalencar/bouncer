@@ -50,9 +50,14 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   Admin
                 </Link>
               ) : (
-                <Link to="/me" className={location.pathname === '/me' ? 'active' : ''}>
-                  Me
-                </Link>
+                <>
+                  <Link to="/me" className={location.pathname === '/me' ? 'active' : ''}>
+                    Me
+                  </Link>
+                  <Link to="/access" className={location.pathname === '/access' ? 'active' : ''}>
+                    Access
+                  </Link>
+                </>
               )
             )}
             {selectedTenant && (
