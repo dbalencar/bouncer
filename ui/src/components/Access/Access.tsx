@@ -1,127 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTenant } from '../../context/TenantContext';
 import { useSubject } from '../../context/SubjectContext';
-import { grantApi, grantRequestApi, roleApi, permissionApi, resourceGroupApi, resourceApi as resourceServiceApi } from '../../services/api';
-import { Grant, GrantRequest, Role, Permission, ResourceGroup, Resource } from '../../types';
+import { grantRequestApi } from '../../services/api';
 import GrantRequestList from '../GrantRequestList/GrantRequestList';
 import GrantRequestForm from '../GrantRequestForm/GrantRequestForm';
 import './Access.css';
 
-interface GrantWithDetails extends Grant {
-  roleName?: string;
-  permissions?: Permission[];
-  resourceName?: string;
-  resourceType?: 'resource' | 'group';
-}
-
 const Access: React.FC = () => {
-  const [currentTenantGrants, setCurrentTenantGrants] = useState<GrantWithDetails[]>([]);
-  const [resources, setResources] = useState<Resource[]>([]);
-  const [resourceGroups, setResourceGroups] = useState<ResourceGroup[]>([]);
   const [showRequestForm, setShowRequestForm] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [grantRequestListKey, setGrantRequestListKey] = useState(0);
   const { selectedTenant, setTenant } = useTenant();
   const { selectedSubject } = useSubject();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (selectedTenant && selectedSubject) {
-      loadResourcesAndGroups();
-      loadCurrentTenantGrants();
-    }
-  }, [selectedTenant, selectedSubject]);
-
-  const loadResourcesAndGroups = async () => {
-    if (!selectedTenant) return;
-
-    try {
-      const [resourcesData, groupsData] = await Promise.all([
-        resourceServiceApi.getByTenant(selectedTenant.id),
-        resourceGroupApi.getByTenant(selectedTenant.id),
-      ]);
-      setResources(resourcesData);
-      setResourceGroups(groupsData);
-    } catch (err) {
-      console.error('Failed to load resources and groups:', err);
-    }
-  };
-
-  const loadCurrentTenantGrants = async () => {
-    if (!selectedTenant || !selectedSubject) {
-      setCurrentTenantGrants([]);
-      return;
-    }
-
-    try {
-      const grants = await grantApi.getBySubject(selectedTenant.id, selectedSubject.uid);
-
-      // Fetch role details and permissions for each grant
-      const grantsWithDetails: GrantWithDetails[] = await Promise.all(
-        grants.map(async (grant) => {
-          try {
-            const role = await roleApi.getByUid(selectedTenant.id, grant.role_uid);
-            const permissions = await roleApi.getPermissions(selectedTenant.id, role.uid);
-
-            // Try to match path to a resource or group
-            let resourceName: string | undefined;
-            let resourceType: 'resource' | 'group' | undefined;
-
-            // First try to match as a resource
-            const resource = resources.find(r => r.path === grant.path);
-            if (resource) {
-              resourceName = resource.name;
-              resourceType = 'resource';
-            } else {
-              // Then try to match as a resource group
-              const group = resourceGroups.find(g => g.path === grant.path);
-              if (group) {
-                resourceName = group.name;
-                resourceType = 'group';
-              }
-            }
-
-            return {
-              ...grant,
-              roleName: role.name,
-              permissions: permissions,
-              resourceName: resourceName,
-              resourceType: resourceType,
-            };
-          } catch (err) {
-            console.error(`Failed to load details for grant ${grant.uid}:`, err);
-            return grant;
-          }
-        })
-      );
-
-      setCurrentTenantGrants(grantsWithDetails);
-    } catch (err) {
-      console.error('Failed to load current tenant grants:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRemoveGrant = async (grantUid: string) => {
-    if (!selectedTenant) return;
-    if (!window.confirm('Are you sure you want to remove this grant?')) return;
-
-    try {
-      await grantApi.delete(selectedTenant.id, grantUid);
-      loadCurrentTenantGrants();
-    } catch (err) {
-      console.error('Failed to remove grant:', err);
-    }
-  };
-
   const handleRequestCreated = () => {
-    if (selectedSubject && selectedTenant) {
-      loadCurrentTenantGrants();
-      // Force GrantRequestList to remount and reload
-      setGrantRequestListKey(prev => prev + 1);
-    }
+    // Force GrantRequestList to remount and reload
+    setGrantRequestListKey(prev => prev + 1);
   };
 
   if (!selectedSubject) {
@@ -145,10 +40,6 @@ const Access: React.FC = () => {
     );
   }
 
-  if (loading) {
-    return <div className="loading">Loading...</div>;
-  }
-
   return (
     <div className="access">
       <h2>Access Request</h2>
@@ -169,47 +60,6 @@ const Access: React.FC = () => {
           subjectUid={selectedSubject.uid}
           onRequestCreated={handleRequestCreated}
         />
-      </div>
-
-      <div className="context-card">
-        <h3>Current Grants</h3>
-        {currentTenantGrants.length === 0 ? (
-          <p className="no-context">You have no grants in this tenant.</p>
-        ) : (
-          <div className="grant-grid">
-            {currentTenantGrants.map((grant) => (
-              <div key={grant.uid} className="grant-card">
-                <div className="grant-header">
-                  <p><strong>Resource:</strong> {grant.resourceName || grant.path}</p>
-                  {grant.resourceType && (
-                    <span className={`resource-type-badge ${grant.resourceType}`}>
-                      {grant.resourceType}
-                    </span>
-                  )}
-                </div>
-                <p><strong>Role:</strong> {grant.roleName || grant.role_uid}</p>
-                {grant.permissions && grant.permissions.length > 0 && (
-                  <div className="permissions-section">
-                    <p><strong>Effective Permissions:</strong></p>
-                    <div className="permissions-list">
-                      {grant.permissions.map((permission) => (
-                        <span key={permission.uid} className="permission-badge">
-                          {permission.name}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                <button
-                  onClick={() => handleRemoveGrant(grant.uid)}
-                  className="button button-danger"
-                >
-                  Remove Grant
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
       <div className="context-card">

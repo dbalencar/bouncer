@@ -130,10 +130,92 @@
   background-color: #0052a3;
 }
 
+.button-secondary {
+  background-color: #6c757d;
+  color: white;
+  margin-top: 0.5rem;
+}
+
+.button-secondary:hover {
+  background-color: #5a6268;
+}
+
+.button-small {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  margin-top: 0;
+}
+
+.button-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.button-danger:hover {
+  background-color: #c82333;
+}
+
 .loading {
   text-align: center;
   padding: 2rem;
   color: #888;
+}
+
+.grants-list {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #333;
+}
+
+.grant-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.grant-item:last-child {
+  margin-bottom: 0;
+}
+
+.grant-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.grant-resource {
+  color: #007bff;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.grant-role {
+  color: #888;
+  font-size: 0.875rem;
+}
+
+.resource-type-badge {
+  font-size: 0.65rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 10px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.resource-type-badge.resource {
+  background-color: #28a745;
+  color: white;
+}
+
+.resource-type-badge.group {
+  background-color: #ffc107;
+  color: #333;
 }
 
 .grant-grid {
