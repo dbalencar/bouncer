@@ -4,6 +4,7 @@ import { useTenant } from '../../context/TenantContext';
 import { useSubject } from '../../context/SubjectContext';
 import { subjectApi, tenantApi } from '../../services/api';
 import { Subject, Tenant } from '../../types';
+import Breadcrumb from '../Breadcrumb/Breadcrumb';
 import './Layout.css';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -109,6 +110,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </div>
       </header>
       <main className="main">
+        <Breadcrumb />
         {children}
       </main>
     </div>
