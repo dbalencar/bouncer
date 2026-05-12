@@ -52,7 +52,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <div className="header-right" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             {selectedSubject ? (
               <>
-                <span className="subject-indicator">{selectedSubject.username}</span>
+                <span className="subject-indicator">{selectedSubject.name}</span>
                 <button
                   onClick={handleLogout}
                   className="logout-button"
@@ -84,7 +84,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                           onClick={() => handleLogin(subject)}
                           style={{ display: 'block', width: '100%', padding: '0.5rem 1rem', background: 'none', border: 'none', color: '#fff', textAlign: 'left', cursor: 'pointer' }}
                         >
-                          {subject.username}
+                          {subject.name}
                         </button>
                       ))
                     )}
