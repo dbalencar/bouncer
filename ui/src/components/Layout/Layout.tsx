@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTenant } from '../../context/TenantContext';
 import { useSubject } from '../../context/SubjectContext';
 import { tenantApi } from '../../services/api';
@@ -8,6 +8,7 @@ import './Layout.css';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { selectedTenant, clearTenant } = useTenant();
   const { selectedSubject, clearSubject } = useSubject();
   const [tenants, setTenants] = useState<Tenant[]>([]);
@@ -28,6 +29,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const handleClear = () => {
     clearTenant();
     clearSubject();
+    navigate('/');
   };
 
   const isSubjectAdmin = selectedSubject
@@ -42,12 +44,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <Link to="/">Bouncer</Link>
           </h1>
           <nav className="nav">
-            <Link to="/tenants" className={location.pathname === '/tenants' ? 'active' : ''}>
-              Tenants
-            </Link>
-            <Link to="/subjects" className={location.pathname === '/subjects' ? 'active' : ''}>
-              Subjects
-            </Link>
             {selectedSubject && (
               isSubjectAdmin ? (
                 <Link to="/admin" className={location.pathname === '/admin' ? 'active' : ''}>
