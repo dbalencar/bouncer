@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Subject, Tenant, Policy, Permission, PolicyEvaluationRequest, PolicyEvaluationResponse } from '../types';
+import { Subject, Tenant, Policy, Permission, Role, PolicyEvaluationRequest, PolicyEvaluationResponse } from '../types';
 
 const API_BASE_URL = '/api';
 
@@ -104,6 +104,37 @@ export const permissionApi = {
   
   delete: async (tenantId: string, uid: string): Promise<void> => {
     await api.delete(`/tenants/${tenantId}/permissions/${uid}`);
+  },
+};
+
+export const roleApi = {
+  getByTenant: async (tenantId: string): Promise<Role[]> => {
+    const response = await api.get(`/tenants/${tenantId}/roles`);
+    return response.data;
+  },
+  
+  getByUid: async (tenantId: string, uid: string): Promise<Role> => {
+    const response = await api.get(`/tenants/${tenantId}/roles/${uid}`);
+    return response.data;
+  },
+  
+  getPermissions: async (tenantId: string, roleUid: string): Promise<Permission[]> => {
+    const response = await api.get(`/tenants/${tenantId}/roles/${roleUid}/permissions`);
+    return response.data;
+  },
+  
+  create: async (tenantId: string, role: { name: string; permission_uids: string[] }): Promise<Role> => {
+    const response = await api.post(`/tenants/${tenantId}/roles`, role);
+    return response.data;
+  },
+  
+  update: async (tenantId: string, uid: string, role: { name?: string; permission_uids?: string[] }): Promise<Role> => {
+    const response = await api.put(`/tenants/${tenantId}/roles/${uid}`, role);
+    return response.data;
+  },
+  
+  delete: async (tenantId: string, uid: string): Promise<void> => {
+    await api.delete(`/tenants/${tenantId}/roles/${uid}`);
   },
 };
 

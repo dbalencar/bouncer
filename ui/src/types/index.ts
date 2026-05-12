@@ -43,6 +43,13 @@ export interface Permission {
   updated_at: string;
 }
 
+export interface Role {
+  uid: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface PolicyEvaluationRequest {
   subjectUid: string;
   resourceType: string;

@@ -43,6 +43,19 @@ export interface Permission {
   updated_at: Date;
 }
 
+export interface Role {
+  uid: string;
+  name: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface RolePermission {
+  role_uid: string;
+  permission_uid: string;
+  created_at: Date;
+}
+
 export interface PolicyEvaluationRequest {
   subjectUid: string;
   resourceType: string;
@@ -77,4 +90,9 @@ export interface CreateResourceRequest {
 export interface CreatePermissionRequest {
   name: string;
   parent_uid: string | null;
+}
+
+export interface CreateRoleRequest {
+  name: string;
+  permission_uids?: string[];
 }

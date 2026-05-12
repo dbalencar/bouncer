@@ -34,6 +34,32 @@ CREATE INDEX idx_tenant_template_permissions_name ON tenant_template.permissions
 CREATE INDEX idx_tenant_template_permissions_parent ON tenant_template.permissions(parent_uid);
 CREATE INDEX idx_tenant_template_permissions_path ON tenant_template.permissions(path);
 
+-- Create roles table in tenant template
+CREATE TABLE tenant_template.roles (
+    uid UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(name)
+);
+
+-- Create index on role name
+CREATE INDEX idx_tenant_template_roles_name ON tenant_template.roles(name);
+
+-- Create role_permissions junction table (many-to-many)
+CREATE TABLE tenant_template.role_permissions (
+    role_uid UUID NOT NULL,
+    permission_uid UUID NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (role_uid, permission_uid),
+    CONSTRAINT fk_role_permissions_role FOREIGN KEY (role_uid) REFERENCES tenant_template.roles(uid) ON DELETE CASCADE,
+    CONSTRAINT fk_role_permissions_permission FOREIGN KEY (permission_uid) REFERENCES tenant_template.permissions(uid) ON DELETE CASCADE
+);
+
+-- Create index for role_permissions queries
+CREATE INDEX idx_tenant_template_role_permissions_role ON tenant_template.role_permissions(role_uid);
+CREATE INDEX idx_tenant_template_role_permissions_permission ON tenant_template.role_permissions(permission_uid);
+
 -- Create resources table in tenant template
 CREATE TABLE tenant_template.resources (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
