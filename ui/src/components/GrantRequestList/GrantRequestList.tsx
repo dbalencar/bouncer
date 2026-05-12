@@ -19,6 +19,7 @@ interface GrantRequestWithDetails extends GrantRequest {
 }
 
 const GrantRequestList: React.FC<GrantRequestListProps> = ({ schemaName, tenantId, subjectUid, onRequestDelete, onRequestCreated }) => {
+  const [allRequests, setAllRequests] = useState<GrantRequestWithDetails[]>([]);
   const [requests, setRequests] = useState<GrantRequestWithDetails[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [resources, setResources] = useState<Resource[]>([]);
@@ -33,6 +34,18 @@ const GrantRequestList: React.FC<GrantRequestListProps> = ({ schemaName, tenantI
     loadResourcesAndGroups();
     loadSubjectGrants();
   }, [schemaName, tenantId, subjectUid]);
+
+  // Re-filter requests when roles or subjectGrants change
+  useEffect(() => {
+    if (allRequests.length > 0) {
+      const filteredRequests = allRequests.filter(request => {
+        const isOwnRequest = request.subject_uid === subjectUid;
+        const canApprove = canApproveRequestHelper(request, subjectGrants, roles);
+        return isOwnRequest || canApprove;
+      });
+      setRequests(filteredRequests);
+    }
+  }, [roles, subjectGrants, allRequests, subjectUid]);
 
   const loadRequests = async () => {
     try {
@@ -82,7 +95,7 @@ const GrantRequestList: React.FC<GrantRequestListProps> = ({ schemaName, tenantI
         })
       );
       
-      setRequests(requestsWithDetails);
+      setAllRequests(requestsWithDetails);
       setError(null);
     } catch (err) {
       setError('Failed to load grant requests');
@@ -128,7 +141,7 @@ const GrantRequestList: React.FC<GrantRequestListProps> = ({ schemaName, tenantI
 
     try {
       await grantRequestApi.delete(schemaName, uid);
-      loadRequests();
+      await loadRequests();
       if (onRequestDelete) onRequestDelete();
     } catch (err) {
       setError('Failed to delete grant request');
@@ -141,7 +154,7 @@ const GrantRequestList: React.FC<GrantRequestListProps> = ({ schemaName, tenantI
 
     try {
       await grantRequestApi.approve(schemaName, uid, subjectUid);
-      loadRequests();
+      await loadRequests();
       if (onRequestCreated) onRequestCreated();
     } catch (err) {
       setError('Failed to approve grant request');
@@ -154,7 +167,7 @@ const GrantRequestList: React.FC<GrantRequestListProps> = ({ schemaName, tenantI
 
     try {
       await grantRequestApi.reject(schemaName, uid, subjectUid);
-      loadRequests();
+      await loadRequests();
       if (onRequestCreated) onRequestCreated();
     } catch (err) {
       setError('Failed to reject grant request');
@@ -162,13 +175,13 @@ const GrantRequestList: React.FC<GrantRequestListProps> = ({ schemaName, tenantI
     }
   };
 
-  const canApproveRequest = (request: GrantRequestWithDetails): boolean => {
+  const canApproveRequestHelper = (request: GrantRequestWithDetails, grants: Grant[], roleList: Role[]): boolean => {
     // Check if the subject has admin permission on the requested path
-    for (const grant of subjectGrants) {
+    for (const grant of grants) {
       // Check if the grant path matches or is a parent of the requested path
       if (request.path.startsWith(grant.path) || grant.path.startsWith(request.path)) {
         // Check if the grant's role has admin permission
-        const role = roles.find(r => r.uid === grant.role_uid);
+        const role = roleList.find(r => r.uid === grant.role_uid);
         // For now, check if role name indicates admin permission
         // TODO: Check actual role permissions instead of role name
         if (role && (role.name === 'Application Owner' || role.name === 'Tenant Admin')) {
@@ -177,6 +190,10 @@ const GrantRequestList: React.FC<GrantRequestListProps> = ({ schemaName, tenantI
       }
     }
     return false;
+  };
+
+  const canApproveRequest = (request: GrantRequestWithDetails): boolean => {
+    return canApproveRequestHelper(request, subjectGrants, roles);
   };
 
   const getStatusColor = (status: string) => {
