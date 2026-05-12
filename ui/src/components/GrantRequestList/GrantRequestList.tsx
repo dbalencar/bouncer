@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { grantRequestApi, roleApi, resourceGroupApi, resourceApi as resourceServiceApi, grantApi } from '../../services/api';
 import { GrantRequest, Role, ResourceGroup, Resource, Grant } from '../../types';
 import './GrantRequestList.css';
@@ -28,6 +28,16 @@ const GrantRequestList: React.FC<GrantRequestListProps> = ({ schemaName, tenantI
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Filter requests based on current roles and grants
+  const filterRequests = useCallback(() => {
+    const filteredRequests = allRequests.filter(request => {
+      const isOwnRequest = request.subject_uid === subjectUid;
+      const canApprove = canApproveRequestHelper(request, subjectGrants, roles);
+      return isOwnRequest || canApprove;
+    });
+    setRequests(filteredRequests);
+  }, [allRequests, subjectGrants, roles, subjectUid]);
+
   useEffect(() => {
     loadRequests();
     loadRoles();
@@ -35,17 +45,10 @@ const GrantRequestList: React.FC<GrantRequestListProps> = ({ schemaName, tenantI
     loadSubjectGrants();
   }, [schemaName, tenantId, subjectUid]);
 
-  // Re-filter requests when roles or subjectGrants change
+  // Re-filter requests when roles, subjectGrants, or allRequests change
   useEffect(() => {
-    if (allRequests.length > 0) {
-      const filteredRequests = allRequests.filter(request => {
-        const isOwnRequest = request.subject_uid === subjectUid;
-        const canApprove = canApproveRequestHelper(request, subjectGrants, roles);
-        return isOwnRequest || canApprove;
-      });
-      setRequests(filteredRequests);
-    }
-  }, [roles, subjectGrants, allRequests, subjectUid]);
+    filterRequests();
+  }, [filterRequests]);
 
   const loadRequests = async () => {
     try {
@@ -96,6 +99,7 @@ const GrantRequestList: React.FC<GrantRequestListProps> = ({ schemaName, tenantI
       );
       
       setAllRequests(requestsWithDetails);
+      // Filter will be triggered by useEffect when allRequests changes
       setError(null);
     } catch (err) {
       setError('Failed to load grant requests');
@@ -142,7 +146,8 @@ const GrantRequestList: React.FC<GrantRequestListProps> = ({ schemaName, tenantI
     try {
       await grantRequestApi.delete(schemaName, uid);
       await loadRequests();
-      if (onRequestDelete) onRequestDelete();
+      // Force a refresh of the parent component's grants
+      if (onRequestCreated) onRequestCreated();
     } catch (err) {
       setError('Failed to delete grant request');
       console.error(err);
@@ -155,6 +160,7 @@ const GrantRequestList: React.FC<GrantRequestListProps> = ({ schemaName, tenantI
     try {
       await grantRequestApi.approve(schemaName, uid, subjectUid);
       await loadRequests();
+      // Force a refresh of the parent component's grants
       if (onRequestCreated) onRequestCreated();
     } catch (err) {
       setError('Failed to approve grant request');
@@ -168,6 +174,7 @@ const GrantRequestList: React.FC<GrantRequestListProps> = ({ schemaName, tenantI
     try {
       await grantRequestApi.reject(schemaName, uid, subjectUid);
       await loadRequests();
+      // Force a refresh of the parent component's grants
       if (onRequestCreated) onRequestCreated();
     } catch (err) {
       setError('Failed to reject grant request');
