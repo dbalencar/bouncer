@@ -21,7 +21,7 @@ function App() {
         <SubjectProvider>
           <Layout>
             <Routes>
-              <Route path="/" element={<TenantList />} />
+              <Route path="/" element={<SubjectList />} />
               <Route path="/tenants" element={<TenantList />} />
               <Route path="/tenants/:tenantId/policies" element={<PolicyList />} />
               <Route path="/tenants/:tenantId/permissions" element={<PermissionList />} />
