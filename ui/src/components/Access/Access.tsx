@@ -2,14 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTenant } from '../../context/TenantContext';
 import { useSubject } from '../../context/SubjectContext';
-import { grantApi, grantRequestApi } from '../../services/api';
-import { Grant, GrantRequest } from '../../types';
+import { grantApi, grantRequestApi, roleApi, permissionApi } from '../../services/api';
+import { Grant, GrantRequest, Role, Permission } from '../../types';
 import GrantRequestList from '../GrantRequestList/GrantRequestList';
 import GrantRequestForm from '../GrantRequestForm/GrantRequestForm';
 import './Access.css';
 
+interface GrantWithDetails extends Grant {
+  roleName?: string;
+  permissions?: Permission[];
+}
+
 const Access: React.FC = () => {
-  const [currentTenantGrants, setCurrentTenantGrants] = useState<Grant[]>([]);
+  const [currentTenantGrants, setCurrentTenantGrants] = useState<GrantWithDetails[]>([]);
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const { selectedTenant, setTenant } = useTenant();
@@ -30,7 +35,26 @@ const Access: React.FC = () => {
 
     try {
       const grants = await grantApi.getBySubject(selectedTenant.id, selectedSubject.uid);
-      setCurrentTenantGrants(grants);
+
+      // Fetch role details and permissions for each grant
+      const grantsWithDetails: GrantWithDetails[] = await Promise.all(
+        grants.map(async (grant) => {
+          try {
+            const role = await roleApi.getByUid(selectedTenant.id, grant.role_uid);
+            const permissions = await roleApi.getPermissions(selectedTenant.id, role.uid);
+            return {
+              ...grant,
+              roleName: role.name,
+              permissions: permissions,
+            };
+          } catch (err) {
+            console.error(`Failed to load details for grant ${grant.uid}:`, err);
+            return grant;
+          }
+        })
+      );
+
+      setCurrentTenantGrants(grantsWithDetails);
     } catch (err) {
       console.error('Failed to load current tenant grants:', err);
     } finally {
@@ -110,7 +134,19 @@ const Access: React.FC = () => {
             {currentTenantGrants.map((grant) => (
               <div key={grant.uid} className="grant-card">
                 <p><strong>Path:</strong> {grant.path}</p>
-                <p><strong>Role UID:</strong> {grant.role_uid}</p>
+                <p><strong>Role:</strong> {grant.roleName || grant.role_uid}</p>
+                {grant.permissions && grant.permissions.length > 0 && (
+                  <div className="permissions-section">
+                    <p><strong>Effective Permissions:</strong></p>
+                    <div className="permissions-list">
+                      {grant.permissions.map((permission) => (
+                        <span key={permission.uid} className="permission-badge">
+                          {permission.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <button
                   onClick={() => handleRemoveGrant(grant.uid)}
                   className="button button-danger"
