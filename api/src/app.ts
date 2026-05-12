@@ -14,6 +14,9 @@ dotenv.config();
 export const createApp = async (): Promise<Application> => {
   const app = express();
 
+  // Disable X-Powered-By header for security
+  app.disable('x-powered-by');
+
   // Middleware
   app.use(cors({
     origin: process.env.CORS_ORIGIN || 'http://localhost:5173'
