@@ -8,12 +8,13 @@ import GrantRequestList from '../GrantRequestList/GrantRequestList';
 import GrantRequestForm from '../GrantRequestForm/GrantRequestForm';
 import './Me.css';
 
-interface TenantWithGrants extends Tenant {
+interface TenantWithAccess extends Tenant {
+  hasAccess: boolean;
   grants: Grant[];
 }
 
 const Me: React.FC = () => {
-  const [tenantsWithGrants, setTenantsWithGrants] = useState<TenantWithGrants[]>([]);
+  const [allTenants, setAllTenants] = useState<TenantWithAccess[]>([]);
   const [currentTenantGrants, setCurrentTenantGrants] = useState<Grant[]>([]);
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -22,7 +23,7 @@ const Me: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    loadTenantsWithGrants();
+    loadAllTenants();
   }, [selectedSubject]);
 
   useEffect(() => {
@@ -31,36 +32,47 @@ const Me: React.FC = () => {
     }
   }, [selectedTenant, selectedSubject]);
 
-  const loadTenantsWithGrants = async () => {
+  const loadAllTenants = async () => {
     if (!selectedSubject) {
-      setTenantsWithGrants([]);
+      setAllTenants([]);
       setLoading(false);
       return;
     }
 
     try {
       setLoading(true);
-      const allTenants = await tenantApi.getAll();
-      const tenantsWithGrantsData: TenantWithGrants[] = [];
+      const tenants = await tenantApi.getAll();
+      const tenantsWithAccessData: TenantWithAccess[] = [];
 
-      for (const tenant of allTenants) {
+      for (const tenant of tenants) {
         try {
           const grants = await grantApi.getBySubject(tenant.id, selectedSubject.uid);
-          if (grants.length > 0) {
-            tenantsWithGrantsData.push({
-              ...tenant,
-              grants,
-            });
-          }
+          tenantsWithAccessData.push({
+            ...tenant,
+            hasAccess: grants.length > 0,
+            grants,
+          });
         } catch (err) {
-          // Skip tenant if grant check fails
+          // If grant check fails, assume no access
           console.error(`Failed to check grants for tenant ${tenant.id}:`, err);
+          tenantsWithAccessData.push({
+            ...tenant,
+            hasAccess: false,
+            grants: [],
+          });
         }
       }
 
-      setTenantsWithGrants(tenantsWithGrantsData);
+      // Sort: tenants with access first, then others
+      tenantsWithAccessData.sort((a, b) => {
+        if (a.hasAccess && !b.hasAccess) return -1;
+        if (!a.hasAccess && b.hasAccess) return 1;
+        return a.name.localeCompare(b.name);
+      });
+
+      setAllTenants(tenantsWithAccessData);
     } catch (err) {
-      console.error('Failed to load tenants with grants:', err);
+      console.error('Failed to load tenants:', err);
     } finally {
       setLoading(false);
     }
@@ -92,7 +104,7 @@ const Me: React.FC = () => {
     try {
       await grantApi.delete(selectedTenant.id, grantUid);
       loadCurrentTenantGrants();
-      loadTenantsWithGrants();
+      loadAllTenants();
     } catch (err) {
       console.error('Failed to remove grant:', err);
     }
@@ -101,6 +113,7 @@ const Me: React.FC = () => {
   const handleRequestCreated = () => {
     if (selectedSubject && selectedTenant) {
       loadCurrentTenantGrants();
+      loadAllTenants();
     }
   };
 
@@ -214,22 +227,31 @@ const Me: React.FC = () => {
       )}
 
       <div className="context-card">
-        <h3>Tenants With Access</h3>
-        {tenantsWithGrants.length === 0 ? (
-          <p className="no-context">You do not have access to any tenants.</p>
+        <h3>All Tenants</h3>
+        {allTenants.length === 0 ? (
+          <p className="no-context">No tenants available.</p>
         ) : (
           <div className="tenant-grid">
-            {tenantsWithGrants.map((tenant) => (
-              <div key={tenant.id} className="tenant-card">
-                <h3>{tenant.name}</h3>
+            {allTenants.map((tenant) => (
+              <div key={tenant.id} className={`tenant-card ${tenant.hasAccess ? 'has-access' : 'no-access'}`}>
+                <div className="tenant-header">
+                  <h3>{tenant.name}</h3>
+                  {tenant.hasAccess && (
+                    <span className="access-badge">Has Access</span>
+                  )}
+                </div>
                 <p><strong>Schema:</strong> {tenant.schema_name}</p>
                 <p><strong>ID:</strong> {tenant.id}</p>
-                <p><strong>Grants:</strong> {tenant.grants.length}</p>
+                {tenant.hasAccess ? (
+                  <p><strong>Grants:</strong> {tenant.grants.length}</p>
+                ) : (
+                  <p className="no-access-text">No access - request access to manage this tenant</p>
+                )}
                 <button
                   onClick={() => handleManageTenant(tenant)}
                   className="button button-primary"
                 >
-                  Manage
+                  {tenant.hasAccess ? 'Manage' : 'Request Access'}
                 </button>
               </div>
             ))}

@@ -56,6 +56,50 @@
   color: #fff;
 }
 
+.tenant-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.tenant-header h3 {
+  margin: 0;
+  color: #fff;
+}
+
+.access-badge {
+  background-color: #28a745;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.tenant-card.has-access {
+  border-color: #28a745;
+}
+
+.tenant-card.has-access:hover {
+  border-color: #218838;
+}
+
+.tenant-card.no-access {
+  border-color: #666;
+  opacity: 0.8;
+}
+
+.tenant-card.no-access:hover {
+  border-color: #888;
+  opacity: 1;
+}
+
+.no-access-text {
+  color: #dc3545;
+  font-style: italic;
+}
+
 .tenant-card p {
   color: #888;
   margin-bottom: 0.5rem;
