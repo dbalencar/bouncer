@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { subjectApi } from '../../services/api';
+import { useSubject } from '../../context/SubjectContext';
 import { Subject } from '../../types';
 import './SubjectList.css';
 
@@ -7,6 +9,8 @@ const SubjectList: React.FC = () => {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { setSubject } = useSubject();
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadSubjects();
@@ -24,6 +28,11 @@ const SubjectList: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleActAs = (subject: Subject) => {
+    setSubject(subject);
+    navigate('/me');
   };
 
   if (loading) return <div className="loading">Loading...</div>;
@@ -44,6 +53,12 @@ const SubjectList: React.FC = () => {
             <p className="subject-meta">
               Created: {new Date(subject.created_at).toLocaleDateString()}
             </p>
+            <button
+              onClick={() => handleActAs(subject)}
+              className="button button-primary"
+            >
+              Act As
+            </button>
           </div>
         ))}
       </div>

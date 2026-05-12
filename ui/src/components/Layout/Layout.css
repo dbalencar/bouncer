@@ -52,7 +52,7 @@
   background-color: #333;
 }
 
-.clear-tenant {
+.clear-selection {
   background-color: #dc3545;
   color: white;
   border: none;
@@ -62,7 +62,7 @@
   font-size: 0.875rem;
 }
 
-.clear-tenant:hover {
+.clear-selection:hover {
   background-color: #c82333;
 }
 
@@ -73,6 +73,15 @@
   border-radius: 4px;
   background-color: #0a2a4a;
   border: 1px solid #0066cc;
+}
+
+.subject-indicator {
+  color: #28a745;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  background-color: #0a3d1a;
+  border: 1px solid #28a745;
 }
 
 .main {

@@ -1,0 +1,34 @@
+.me h2 {
+  margin-bottom: 2rem;
+  color: #fff;
+}
+
+.context-card {
+  background-color: #2a2a2a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.context-card h3 {
+  margin-bottom: 1rem;
+  color: #fff;
+  border-bottom: 1px solid #333;
+  padding-bottom: 0.5rem;
+}
+
+.context-info p {
+  color: #888;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.context-info strong {
+  color: #fff;
+}
+
+.no-context {
+  color: #666;
+  font-style: italic;
+}

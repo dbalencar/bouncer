@@ -1,11 +1,18 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTenant } from '../../context/TenantContext';
+import { useSubject } from '../../context/SubjectContext';
 import './Layout.css';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const { selectedTenant, clearTenant } = useTenant();
+  const { selectedSubject, clearSubject } = useSubject();
+
+  const handleClear = () => {
+    clearTenant();
+    clearSubject();
+  };
 
   return (
     <div className="layout">
@@ -21,10 +28,15 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <Link to="/subjects" className={location.pathname === '/subjects' ? 'active' : ''}>
               Subjects
             </Link>
+            {selectedSubject && (
+              <Link to="/me" className={location.pathname === '/me' ? 'active' : ''}>
+                Me
+              </Link>
+            )}
             {selectedTenant && (
               <>
-                <Link 
-                  to={`/tenants/${selectedTenant.id}/policies`} 
+                <Link
+                  to={`/tenants/${selectedTenant.id}/policies`}
                   className={location.pathname.includes('/policies') ? 'active' : ''}
                 >
                   Policies
@@ -68,10 +80,17 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 <span className="tenant-indicator">
                   {selectedTenant.name}
                 </span>
-                <button onClick={clearTenant} className="clear-tenant">
-                  Clear Tenant
-                </button>
               </>
+            )}
+            {selectedSubject && (
+              <span className="subject-indicator">
+                {selectedSubject.username}
+              </span>
+            )}
+            {(selectedTenant || selectedSubject) && (
+              <button onClick={handleClear} className="clear-selection">
+                Clear
+              </button>
             )}
           </nav>
         </div>
