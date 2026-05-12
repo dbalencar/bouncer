@@ -94,22 +94,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                       <Link to="/access" className={location.pathname === '/access' ? 'active' : ''}>
                         Access
                       </Link>
-                      {location.pathname !== '/access' && (
-                        <>
-                          <Link
-                            to={`/tenants/${selectedTenant.id}/grants`}
-                            className={location.pathname.includes('/grants') ? 'active' : ''}
-                          >
-                            Grants
-                          </Link>
-                          <Link
-                            to={`/tenants/${selectedTenant.id}/test`}
-                            className={location.pathname.includes('/test') ? 'active' : ''}
-                          >
-                            Test Policy
-                          </Link>
-                        </>
-                      )}
                     </>
                   )}
                   <span className="tenant-indicator">
