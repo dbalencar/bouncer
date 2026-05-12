@@ -62,7 +62,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 </button>
               </>
             ) : (
-              <>
+              <div style={{ position: 'relative' }}>
                 <button
                   className="dropdown-button"
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -90,7 +90,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     )}
                   </div>
                 )}
-              </>
+              </div>
             )}
           </div>
         </div>
