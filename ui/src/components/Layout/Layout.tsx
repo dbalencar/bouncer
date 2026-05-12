@@ -80,45 +80,37 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 </button>
               </>
             ) : (
-              <>
-                {config.demoMode ? (
-                  <div className="subject-dropdown" ref={dropdownRef}>
-                    <button
-                      className="dropdown-button"
-                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    >
-                      Login
-                    </button>
-                    {isDropdownOpen && (
-                      <div className="dropdown-menu">
-                        {isLoadingSubjects ? (
-                          <div className="dropdown-item" style={{ cursor: 'default' }}>
-                            Loading...
-                          </div>
-                        ) : subjects.length === 0 ? (
-                          <div className="dropdown-item" style={{ cursor: 'default' }}>
-                            No subjects available
-                          </div>
-                        ) : (
-                          subjects.map((subject) => (
-                            <button
-                              key={subject.uid}
-                              className="dropdown-item"
-                              onClick={() => handleLogin(subject)}
-                            >
-                              {subject.username}
-                            </button>
-                          ))
-                        )}
+              <div className="subject-dropdown" ref={dropdownRef}>
+                <button
+                  className="dropdown-button"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                >
+                  Login
+                </button>
+                {isDropdownOpen && (
+                  <div className="dropdown-menu">
+                    {isLoadingSubjects ? (
+                      <div className="dropdown-item" style={{ cursor: 'default' }}>
+                        Loading...
                       </div>
+                    ) : subjects.length === 0 ? (
+                      <div className="dropdown-item" style={{ cursor: 'default' }}>
+                        No subjects available
+                      </div>
+                    ) : (
+                      subjects.map((subject) => (
+                        <button
+                          key={subject.uid}
+                          className="dropdown-item"
+                          onClick={() => handleLogin(subject)}
+                        >
+                          {subject.username}
+                        </button>
+                      ))
                     )}
                   </div>
-                ) : (
-                  <button className="login-button">
-                    Login
-                  </button>
                 )}
-              </>
+              </div>
             )}
           </div>
         </div>
