@@ -60,19 +60,40 @@ CREATE TABLE tenant_template.role_permissions (
 CREATE INDEX idx_tenant_template_role_permissions_role ON tenant_template.role_permissions(role_uid);
 CREATE INDEX idx_tenant_template_role_permissions_permission ON tenant_template.role_permissions(permission_uid);
 
--- Create resources table in tenant template
-CREATE TABLE tenant_template.resources (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    resource_type VARCHAR(255) NOT NULL,
-    resource_id VARCHAR(255) NOT NULL,
-    attributes JSONB,
+-- Create resource_groups table in tenant template (hierarchical)
+CREATE TABLE tenant_template.resource_groups (
+    uid UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    label VARCHAR(255) NOT NULL,
+    parent_uid UUID REFERENCES tenant_template.resource_groups(uid) ON DELETE CASCADE,
+    path VARCHAR(255) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(resource_type, resource_id)
+    UNIQUE(id)
 );
 
--- Create index on resource_type and resource_id
-CREATE INDEX idx_tenant_template_resources_type_id ON tenant_template.resources(resource_type, resource_id);
+-- Create index on resource_group id, parent, and path
+CREATE INDEX idx_tenant_template_resource_groups_id ON tenant_template.resource_groups(id);
+CREATE INDEX idx_tenant_template_resource_groups_parent ON tenant_template.resource_groups(parent_uid);
+CREATE INDEX idx_tenant_template_resource_groups_path ON tenant_template.resource_groups(path);
+
+-- Create resources table in tenant template (with optional group assignment)
+CREATE TABLE tenant_template.resources (
+    uid UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    group_uid UUID REFERENCES tenant_template.resource_groups(uid) ON DELETE SET NULL,
+    path VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(id)
+);
+
+-- Create index on resource id, group, and path
+CREATE INDEX idx_tenant_template_resources_id ON tenant_template.resources(id);
+CREATE INDEX idx_tenant_template_resources_group ON tenant_template.resources(group_uid);
+CREATE INDEX idx_tenant_template_resources_path ON tenant_template.resources(path);
 
 -- Create policy_evaluations log table (optional, for audit)
 CREATE TABLE tenant_template.policy_evaluations (

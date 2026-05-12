@@ -25,11 +25,23 @@ export interface Policy {
   updated_at: Date;
 }
 
-export interface Resource {
+export interface ResourceGroup {
+  uid: string;
   id: string;
-  resource_type: string;
-  resource_id: string;
-  attributes: Record<string, any>;
+  name: string;
+  label: string;
+  parent_uid: string | null;
+  path: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface Resource {
+  uid: string;
+  id: string;
+  name: string;
+  group_uid: string | null;
+  path: string;
   created_at: Date;
   updated_at: Date;
 }
@@ -81,10 +93,30 @@ export interface CreatePolicyRequest {
   is_active?: boolean;
 }
 
+export interface CreateResourceGroupRequest {
+  id: string;
+  name: string;
+  label: string;
+  parent_uid?: string;
+}
+
+export interface UpdateResourceGroupRequest {
+  id?: string;
+  name?: string;
+  label?: string;
+  parent_uid?: string;
+}
+
 export interface CreateResourceRequest {
-  resource_type: string;
-  resource_id: string;
-  attributes?: Record<string, any>;
+  id: string;
+  name: string;
+  group_uid?: string;
+}
+
+export interface UpdateResourceRequest {
+  id?: string;
+  name?: string;
+  group_uid?: string;
 }
 
 export interface CreatePermissionRequest {

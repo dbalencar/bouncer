@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Subject, Tenant, Policy, Permission, Role, PolicyEvaluationRequest, PolicyEvaluationResponse } from '../types';
+import { Subject, Tenant, Policy, Permission, Role, PolicyEvaluationRequest, PolicyEvaluationResponse, ResourceGroup, Resource } from '../types';
 
 const API_BASE_URL = '/api';
 
@@ -112,29 +112,86 @@ export const roleApi = {
     const response = await api.get(`/tenants/${tenantId}/roles`);
     return response.data;
   },
-  
+
   getByUid: async (tenantId: string, uid: string): Promise<Role> => {
     const response = await api.get(`/tenants/${tenantId}/roles/${uid}`);
     return response.data;
   },
-  
+
   getPermissions: async (tenantId: string, roleUid: string): Promise<Permission[]> => {
     const response = await api.get(`/tenants/${tenantId}/roles/${roleUid}/permissions`);
     return response.data;
   },
-  
+
   create: async (tenantId: string, role: { name: string; permission_uids: string[] }): Promise<Role> => {
     const response = await api.post(`/tenants/${tenantId}/roles`, role);
     return response.data;
   },
-  
+
   update: async (tenantId: string, uid: string, role: { name?: string; permission_uids?: string[] }): Promise<Role> => {
     const response = await api.put(`/tenants/${tenantId}/roles/${uid}`, role);
     return response.data;
   },
-  
+
   delete: async (tenantId: string, uid: string): Promise<void> => {
     await api.delete(`/tenants/${tenantId}/roles/${uid}`);
+  },
+};
+
+export const resourceGroupApi = {
+  getByTenant: async (tenantId: string): Promise<ResourceGroup[]> => {
+    const response = await api.get(`/tenants/${tenantId}/resource-groups`);
+    return response.data;
+  },
+
+  getByUid: async (tenantId: string, uid: string): Promise<ResourceGroup> => {
+    const response = await api.get(`/tenants/${tenantId}/resource-groups/${uid}`);
+    return response.data;
+  },
+
+  getResources: async (tenantId: string, groupUid: string): Promise<Resource[]> => {
+    const response = await api.get(`/tenants/${tenantId}/resource-groups/${groupUid}/resources`);
+    return response.data;
+  },
+
+  create: async (tenantId: string, group: { id: string; name: string; label: string; parent_uid?: string }): Promise<ResourceGroup> => {
+    const response = await api.post(`/tenants/${tenantId}/resource-groups`, group);
+    return response.data;
+  },
+
+  update: async (tenantId: string, uid: string, group: { id?: string; name?: string; label?: string; parent_uid?: string }): Promise<ResourceGroup> => {
+    const response = await api.put(`/tenants/${tenantId}/resource-groups/${uid}`, group);
+    return response.data;
+  },
+
+  delete: async (tenantId: string, uid: string): Promise<void> => {
+    await api.delete(`/tenants/${tenantId}/resource-groups/${uid}`);
+  },
+};
+
+export const resourceApi = {
+  getByTenant: async (tenantId: string): Promise<Resource[]> => {
+    const response = await api.get(`/tenants/${tenantId}/resources`);
+    return response.data;
+  },
+
+  getByUid: async (tenantId: string, uid: string): Promise<Resource> => {
+    const response = await api.get(`/tenants/${tenantId}/resources/${uid}`);
+    return response.data;
+  },
+
+  create: async (tenantId: string, resource: { id: string; name: string; group_uid?: string }): Promise<Resource> => {
+    const response = await api.post(`/tenants/${tenantId}/resources`, resource);
+    return response.data;
+  },
+
+  update: async (tenantId: string, uid: string, resource: { id?: string; name?: string; group_uid?: string }): Promise<Resource> => {
+    const response = await api.put(`/tenants/${tenantId}/resources/${uid}`, resource);
+    return response.data;
+  },
+
+  delete: async (tenantId: string, uid: string): Promise<void> => {
+    await api.delete(`/tenants/${tenantId}/resources/${uid}`);
   },
 };
 

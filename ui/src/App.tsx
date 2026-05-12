@@ -7,6 +7,8 @@ import PolicyTest from './components/PolicyTest/PolicyTest';
 import SubjectList from './components/SubjectList/SubjectList';
 import PermissionList from './components/PermissionList/PermissionList';
 import RoleList from './components/RoleList/RoleList';
+import ResourceGroupList from './components/ResourceGroupList/ResourceGroupList';
+import ResourceList from './components/ResourceList/ResourceList';
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
             <Route path="/tenants/:tenantId/policies" element={<PolicyList />} />
             <Route path="/tenants/:tenantId/permissions" element={<PermissionList />} />
             <Route path="/tenants/:tenantId/roles" element={<RoleList />} />
+            <Route path="/tenants/:tenantId/resource-groups" element={<ResourceGroupList />} />
+            <Route path="/tenants/:tenantId/resources" element={<ResourceList />} />
             <Route path="/tenants/:tenantId/test" element={<PolicyTest />} />
             <Route path="/subjects" element={<SubjectList />} />
           </Routes>

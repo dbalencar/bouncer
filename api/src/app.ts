@@ -8,6 +8,8 @@ import policyRoutes from './routes/policies';
 import evaluateRoutes from './routes/evaluate';
 import permissionRoutes from './routes/permissions';
 import roleRoutes from './routes/roles';
+import resourceGroupRoutes from './routes/resourceGroups';
+import resourceRoutes from './routes/resources';
 
 dotenv.config();
 
@@ -39,6 +41,8 @@ export const createApp = async (): Promise<Application> => {
   app.use('/', evaluateRoutes);
   app.use('/', permissionRoutes);
   app.use('/', roleRoutes);
+  app.use('/', resourceGroupRoutes);
+  app.use('/', resourceRoutes);
 
   // Error handling middleware
   app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

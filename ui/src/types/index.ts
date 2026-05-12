@@ -25,11 +25,23 @@ export interface Policy {
   updated_at: string;
 }
 
-export interface Resource {
+export interface ResourceGroup {
+  uid: string;
   id: string;
-  resource_type: string;
-  resource_id: string;
-  attributes: Record<string, any>;
+  name: string;
+  label: string;
+  parent_uid: string | null;
+  path: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Resource {
+  uid: string;
+  id: string;
+  name: string;
+  group_uid: string | null;
+  path: string;
   created_at: string;
   updated_at: string;
 }
