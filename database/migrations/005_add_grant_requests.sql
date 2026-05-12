@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS grant_requests (
     status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (subject_uid) REFERENCES subjects(uid) ON DELETE CASCADE
+    FOREIGN KEY (subject_uid) REFERENCES common.subjects(uid) ON DELETE CASCADE
 );
 
 -- Create indexes for common queries
