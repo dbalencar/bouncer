@@ -92,7 +92,7 @@ const TenantList: React.FC = () => {
                 onClick={() => handleSelectTenant(tenant)}
                 className="button button-primary"
               >
-                Manage Policies
+                Manage
               </button>
               <button 
                 onClick={() => handleDeleteTenant(tenant.id)}

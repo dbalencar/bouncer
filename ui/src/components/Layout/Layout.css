@@ -66,6 +66,15 @@
   background-color: #c82333;
 }
 
+.tenant-indicator {
+  color: #0066cc;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  background-color: #0a2a4a;
+  border: 1px solid #0066cc;
+}
+
 .main {
   flex: 1;
   max-width: 1200px;

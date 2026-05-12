@@ -41,6 +41,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 >
                   Test Policy
                 </Link>
+                <span className="tenant-indicator">
+                  {selectedTenant.name}
+                </span>
                 <button onClick={clearTenant} className="clear-tenant">
                   Clear Tenant
                 </button>
