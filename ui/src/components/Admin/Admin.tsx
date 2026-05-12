@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTenant } from '../../context/TenantContext';
 import { useSubject } from '../../context/SubjectContext';
-import { tenantApi } from '../../services/api';
-import { Tenant } from '../../types';
+import { tenantApi, grantRequestApi } from '../../services/api';
+import { Tenant, GrantRequest } from '../../types';
 import './Admin.css';
 
 const Admin: React.FC = () => {
   const [adminTenants, setAdminTenants] = useState<Tenant[]>([]);
+  const [tenantRequests, setTenantRequests] = useState<Record<string, GrantRequest[]>>({});
   const [loading, setLoading] = useState(true);
   const { selectedTenant, setTenant } = useTenant();
   const { selectedSubject } = useSubject();
@@ -20,6 +21,7 @@ const Admin: React.FC = () => {
   const loadAdminTenants = async () => {
     if (!selectedSubject) {
       setAdminTenants([]);
+      setTenantRequests({});
       setLoading(false);
       return;
     }
@@ -29,6 +31,19 @@ const Admin: React.FC = () => {
       const allTenants = await tenantApi.getAll();
       const tenantsWhereAdmin = allTenants.filter(t => t.admin_uid === selectedSubject.uid);
       setAdminTenants(tenantsWhereAdmin);
+
+      // Load pending grant requests for each admin tenant
+      const requestsByTenant: Record<string, GrantRequest[]> = {};
+      for (const tenant of tenantsWhereAdmin) {
+        try {
+          const requests = await grantRequestApi.getByTenant(tenant.id, 'pending');
+          requestsByTenant[tenant.id] = requests;
+        } catch (err) {
+          console.error(`Failed to load requests for tenant ${tenant.id}:`, err);
+          requestsByTenant[tenant.id] = [];
+        }
+      }
+      setTenantRequests(requestsByTenant);
     } catch (err) {
       console.error('Failed to load admin tenants:', err);
     } finally {
@@ -39,6 +54,28 @@ const Admin: React.FC = () => {
   const handleManageTenant = (tenant: Tenant) => {
     setTenant(tenant);
     navigate(`/tenants/${tenant.id}/policies`);
+  };
+
+  const handleApproveRequest = async (tenantId: string, requestUid: string) => {
+    if (!window.confirm('Are you sure you want to approve this grant request?')) return;
+
+    try {
+      await grantRequestApi.approve(tenantId, requestUid);
+      loadAdminTenants();
+    } catch (err) {
+      console.error('Failed to approve request:', err);
+    }
+  };
+
+  const handleRejectRequest = async (tenantId: string, requestUid: string) => {
+    if (!window.confirm('Are you sure you want to reject this grant request?')) return;
+
+    try {
+      await grantRequestApi.reject(tenantId, requestUid);
+      loadAdminTenants();
+    } catch (err) {
+      console.error('Failed to reject request:', err);
+    }
   };
 
   if (!selectedSubject) {
@@ -84,6 +121,31 @@ const Admin: React.FC = () => {
                 >
                   Manage
                 </button>
+                {tenantRequests[tenant.id] && tenantRequests[tenant.id].length > 0 && (
+                  <div className="pending-requests">
+                    <h4>Pending Requests ({tenantRequests[tenant.id].length})</h4>
+                    {tenantRequests[tenant.id].map((request) => (
+                      <div key={request.uid} className="request-item">
+                        <p><strong>Path:</strong> {request.path}</p>
+                        <p><strong>Role:</strong> {request.role_uid}</p>
+                        <div className="request-actions">
+                          <button
+                            onClick={() => handleApproveRequest(tenant.id, request.uid)}
+                            className="button button-success"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={() => handleRejectRequest(tenant.id, request.uid)}
+                            className="button button-danger"
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>

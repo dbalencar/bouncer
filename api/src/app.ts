@@ -11,6 +11,7 @@ import roleRoutes from './routes/roles';
 import resourceGroupRoutes from './routes/resourceGroups';
 import resourceRoutes from './routes/resources';
 import grantRoutes from './routes/grants';
+import grantRequestRoutes from './routes/grantRequests';
 
 dotenv.config();
 
@@ -45,6 +46,7 @@ export const createApp = async (): Promise<Application> => {
   app.use('/', resourceGroupRoutes);
   app.use('/', resourceRoutes);
   app.use('/', grantRoutes);
+  app.use('/', grantRequestRoutes);
 
   // Error handling middleware
   app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

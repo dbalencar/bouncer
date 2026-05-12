@@ -72,6 +72,19 @@ export interface Grant {
   updated_at: string;
 }
 
+export type GrantRequestStatus = 'pending' | 'approved' | 'rejected';
+
+export interface GrantRequest {
+  uid: string;
+  subject_uid: string;
+  tenant_id: string;
+  path: string;
+  role_uid: string;
+  status: GrantRequestStatus;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface PolicyEvaluationRequest {
   subjectUid: string;
   resourceType: string;

@@ -94,6 +94,58 @@
   background-color: #218838;
 }
 
+.button-success {
+  background-color: #28a745;
+  color: white;
+}
+
+.button-success:hover {
+  background-color: #218838;
+}
+
+.pending-requests {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #333;
+}
+
+.pending-requests h4 {
+  margin: 0 0 0.75rem 0;
+  color: #ffc107;
+  font-size: 0.875rem;
+}
+
+.request-item {
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.request-item p {
+  color: #888;
+  margin-bottom: 0.25rem;
+  font-size: 0.75rem;
+}
+
+.request-item strong {
+  color: #fff;
+}
+
+.request-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.request-actions .button {
+  flex: 1;
+  font-size: 0.75rem;
+  padding: 0.5rem;
+  margin-top: 0;
+}
+
 .loading {
   text-align: center;
   padding: 2rem;

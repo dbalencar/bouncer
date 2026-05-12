@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTenant } from '../../context/TenantContext';
 import { useSubject } from '../../context/SubjectContext';
-import { tenantApi, grantApi } from '../../services/api';
-import { Tenant, Grant } from '../../types';
+import { tenantApi, grantApi, grantRequestApi } from '../../services/api';
+import { Tenant, Grant, GrantRequest } from '../../types';
+import GrantRequestList from '../GrantRequestList/GrantRequestList';
+import GrantRequestForm from '../GrantRequestForm/GrantRequestForm';
 import './Me.css';
 
 interface TenantWithGrants extends Tenant {
@@ -12,6 +14,8 @@ interface TenantWithGrants extends Tenant {
 
 const Me: React.FC = () => {
   const [tenantsWithGrants, setTenantsWithGrants] = useState<TenantWithGrants[]>([]);
+  const [currentTenantGrants, setCurrentTenantGrants] = useState<Grant[]>([]);
+  const [showRequestForm, setShowRequestForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const { selectedTenant, setTenant } = useTenant();
   const { selectedSubject } = useSubject();
@@ -20,6 +24,12 @@ const Me: React.FC = () => {
   useEffect(() => {
     loadTenantsWithGrants();
   }, [selectedSubject]);
+
+  useEffect(() => {
+    if (selectedTenant && selectedSubject) {
+      loadCurrentTenantGrants();
+    }
+  }, [selectedTenant, selectedSubject]);
 
   const loadTenantsWithGrants = async () => {
     if (!selectedSubject) {
@@ -56,9 +66,42 @@ const Me: React.FC = () => {
     }
   };
 
+  const loadCurrentTenantGrants = async () => {
+    if (!selectedTenant || !selectedSubject) {
+      setCurrentTenantGrants([]);
+      return;
+    }
+
+    try {
+      const grants = await grantApi.getBySubject(selectedTenant.id, selectedSubject.uid);
+      setCurrentTenantGrants(grants);
+    } catch (err) {
+      console.error('Failed to load current tenant grants:', err);
+    }
+  };
+
   const handleManageTenant = (tenant: Tenant) => {
     setTenant(tenant);
     navigate(`/tenants/${tenant.id}/policies`);
+  };
+
+  const handleRemoveGrant = async (grantUid: string) => {
+    if (!selectedTenant) return;
+    if (!window.confirm('Are you sure you want to remove this grant?')) return;
+
+    try {
+      await grantApi.delete(selectedTenant.id, grantUid);
+      loadCurrentTenantGrants();
+      loadTenantsWithGrants();
+    } catch (err) {
+      console.error('Failed to remove grant:', err);
+    }
+  };
+
+  const handleRequestCreated = () => {
+    if (selectedSubject && selectedTenant) {
+      loadCurrentTenantGrants();
+    }
   };
 
   if (!selectedSubject) {
@@ -104,6 +147,71 @@ const Me: React.FC = () => {
           <p className="no-context">No tenant selected</p>
         )}
       </div>
+
+      {selectedTenant && selectedSubject && (
+        <>
+          <div className="context-card">
+            <GrantRequestList 
+              tenantId={selectedTenant.id} 
+              subjectUid={selectedSubject.uid}
+              onRequestCreated={handleRequestCreated}
+            />
+          </div>
+
+          <div className="context-card">
+            <h3>Current Grants</h3>
+            {currentTenantGrants.length === 0 ? (
+              <p className="no-context">You have no grants in this tenant.</p>
+            ) : (
+              <div className="grant-grid">
+                {currentTenantGrants.map((grant) => (
+                  <div key={grant.uid} className="grant-card">
+                    <p><strong>Path:</strong> {grant.path}</p>
+                    <p><strong>Role UID:</strong> {grant.role_uid}</p>
+                    <button
+                      onClick={() => handleRemoveGrant(grant.uid)}
+                      className="button button-danger"
+                    >
+                      Remove Grant
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="context-card">
+            {showRequestForm ? (
+              <>
+                <div className="form-header">
+                  <h3>Request New Grant</h3>
+                  <button 
+                    onClick={() => setShowRequestForm(false)}
+                    className="button"
+                  >
+                    Cancel
+                  </button>
+                </div>
+                <GrantRequestForm
+                  tenantId={selectedTenant.id}
+                  subjectUid={selectedSubject.uid}
+                  onRequestCreated={() => {
+                    handleRequestCreated();
+                    setShowRequestForm(false);
+                  }}
+                />
+              </>
+            ) : (
+              <button
+                onClick={() => setShowRequestForm(true)}
+                className="button button-primary"
+              >
+                Request New Grant
+              </button>
+            )}
+          </div>
+        </>
+      )}
 
       <div className="context-card">
         <h3>Tenants With Access</h3>
