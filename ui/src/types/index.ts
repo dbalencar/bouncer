@@ -11,6 +11,7 @@ export interface Tenant {
   id: string;
   name: string;
   schema_name: string;
+  admin_uid: string | null;
   created_at: string;
   updated_at: string;
 }

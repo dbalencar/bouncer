@@ -41,12 +41,15 @@ router.post('/', async (req: Request, res: Response) => {
     if (!request.name) {
       return res.status(400).json({ error: 'Tenant name is required' });
     }
+    if (!request.admin_uid) {
+      return res.status(400).json({ error: 'Admin subject is required' });
+    }
 
     const tenant = await createTenant(request);
     res.status(201).json(tenant);
   } catch (error) {
     console.error('Error creating tenant:', error);
-    res.status(500).json({ error: 'Failed to create tenant' });
+    res.status(500).json({ error: 'Failed to create tenant', message: (error as Error).message });
   }
 });
 

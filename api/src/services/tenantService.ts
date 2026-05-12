@@ -1,18 +1,25 @@
 import { query, getClient } from '../config/database';
 import { Tenant, CreateTenantRequest } from '../types';
+import { getSubjectByUid } from './subjectService';
 
 export const createTenant = async (request: CreateTenantRequest): Promise<Tenant> => {
   const client = await getClient();
   try {
     await client.query('BEGIN');
 
+    // Validate that admin subject exists
+    const adminSubject = await getSubjectByUid(request.admin_uid);
+    if (!adminSubject) {
+      throw new Error('Admin subject not found');
+    }
+
     // Generate a safe schema name from the tenant name
     const schemaName = `tenant_${request.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
 
-    // Insert tenant record
+    // Insert tenant record with admin_uid
     const insertResult = await client.query(
-      'INSERT INTO tenants (name, schema_name) VALUES ($1, $2) RETURNING *',
-      [request.name, schemaName]
+      'INSERT INTO tenants (name, schema_name, admin_uid) VALUES ($1, $2, $3) RETURNING *',
+      [request.name, schemaName, request.admin_uid]
     );
 
     // Create the new schema based on the template
@@ -33,12 +40,35 @@ export const createTenant = async (request: CreateTenantRequest): Promise<Tenant
     }
 
     // Seed base permissions (read and admin)
-    await client.query(`
+    const permissionsResult = await client.query(`
       INSERT INTO ${schemaName}.permissions (name, parent_uid, path) VALUES 
       ('read', NULL, '/read'),
       ('admin', NULL, '/admin')
       RETURNING *
     `);
+
+    // Get the admin permission UID
+    const adminPermission = permissionsResult.rows.find(p => p.name === 'admin');
+
+    // Create a base role for the admin
+    const roleResult = await client.query(
+      `INSERT INTO ${schemaName}.roles (name) VALUES ($1) RETURNING *`,
+      ['Tenant Admin']
+    );
+
+    const adminRole = roleResult.rows[0];
+
+    // Assign admin permission to the admin role
+    await client.query(
+      `INSERT INTO ${schemaName}.role_permissions (role_uid, permission_uid) VALUES ($1, $2)`,
+      [adminRole.uid, adminPermission.uid]
+    );
+
+    // Create a grant for the tenant admin subject with the admin role on all paths
+    await client.query(
+      `INSERT INTO ${schemaName}.grants (subject_uid, path, role_uid) VALUES ($1, $2, $3)`,
+      [request.admin_uid, '/*', adminRole.uid]
+    );
 
     await client.query('COMMIT');
     return insertResult.rows[0];

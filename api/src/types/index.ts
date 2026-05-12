@@ -11,6 +11,7 @@ export interface Tenant {
   id: string;
   name: string;
   schema_name: string;
+  admin_uid: string | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -93,6 +94,7 @@ export interface PolicyEvaluationResponse {
 
 export interface CreateTenantRequest {
   name: string;
+  admin_uid: string;
 }
 
 export interface CreatePolicyRequest {

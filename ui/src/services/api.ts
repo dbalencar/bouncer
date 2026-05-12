@@ -15,17 +15,17 @@ export const tenantApi = {
     const response = await api.get('/tenants');
     return response.data;
   },
-  
+
   getById: async (id: string): Promise<Tenant> => {
     const response = await api.get(`/tenants/${id}`);
     return response.data;
   },
-  
-  create: async (name: string): Promise<Tenant> => {
-    const response = await api.post('/tenants', { name });
+
+  create: async (name: string, adminUid: string): Promise<Tenant> => {
+    const response = await api.post('/tenants', { name, admin_uid: adminUid });
     return response.data;
   },
-  
+
   delete: async (id: string): Promise<void> => {
     await api.delete(`/tenants/${id}`);
   },
