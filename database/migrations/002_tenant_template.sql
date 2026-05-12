@@ -128,3 +128,35 @@ CREATE TABLE tenant_template.policy_evaluations (
 -- Create index on subject_uid for audit queries
 CREATE INDEX idx_tenant_template_evaluations_subject ON tenant_template.policy_evaluations(subject_uid);
 CREATE INDEX idx_tenant_template_evaluations_decision ON tenant_template.policy_evaluations(decision);
+
+-- Create grant_requests table for tracking grant approval requests
+CREATE TABLE tenant_template.grant_requests (
+    uid UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    subject_uid UUID NOT NULL,
+    path VARCHAR(255) NOT NULL,
+    role_uid UUID NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_grant_requests_subject FOREIGN KEY (subject_uid) REFERENCES common.subjects(uid) ON DELETE CASCADE,
+    CONSTRAINT fk_grant_requests_role FOREIGN KEY (role_uid) REFERENCES tenant_template.roles(uid) ON DELETE CASCADE
+);
+
+-- Create indexes for grant_requests queries
+CREATE INDEX idx_tenant_template_grant_requests_subject ON tenant_template.grant_requests(subject_uid);
+CREATE INDEX idx_tenant_template_grant_requests_status ON tenant_template.grant_requests(status);
+CREATE INDEX idx_tenant_template_grant_requests_subject_status ON tenant_template.grant_requests(subject_uid, status);
+
+-- Create trigger to update updated_at timestamp
+CREATE OR REPLACE FUNCTION update_tenant_template_grant_requests_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_update_tenant_template_grant_requests_updated_at
+    BEFORE UPDATE ON tenant_template.grant_requests
+    FOR EACH ROW
+    EXECUTE FUNCTION update_tenant_template_grant_requests_updated_at();

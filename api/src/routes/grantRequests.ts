@@ -12,15 +12,15 @@ import { CreateGrantRequestRequest } from '../types';
 
 const router = Router();
 
-// POST /tenants/:tenantId/grant-requests - Create grant request
-router.post('/tenants/:tenantId/grant-requests', async (req: Request, res: Response) => {
+// POST /tenants/:schemaName/grant-requests - Create grant request
+router.post('/tenants/:schemaName/grant-requests', async (req: Request, res: Response) => {
   try {
     const request: CreateGrantRequestRequest = req.body;
     if (!request.subject_uid || !request.path || !request.role_uid) {
       return res.status(400).json({ error: 'subject_uid, path, and role_uid are required' });
     }
 
-    const grantRequest = await createGrantRequest(req.params.tenantId, request);
+    const grantRequest = await createGrantRequest(req.params.schemaName, request);
     res.status(201).json(grantRequest);
   } catch (error) {
     console.error('Error creating grant request:', error);
@@ -28,10 +28,10 @@ router.post('/tenants/:tenantId/grant-requests', async (req: Request, res: Respo
   }
 });
 
-// GET /tenants/:tenantId/grant-requests/subject/:subjectUid - Get subject's grant requests
-router.get('/tenants/:tenantId/grant-requests/subject/:subjectUid', async (req: Request, res: Response) => {
+// GET /tenants/:schemaName/grant-requests/subject/:subjectUid - Get subject's grant requests
+router.get('/tenants/:schemaName/grant-requests/subject/:subjectUid', async (req: Request, res: Response) => {
   try {
-    const requests = await getGrantRequestsBySubject(req.params.tenantId, req.params.subjectUid);
+    const requests = await getGrantRequestsBySubject(req.params.schemaName, req.params.subjectUid);
     res.json(requests);
   } catch (error) {
     console.error('Error getting grant requests for subject:', error);
@@ -39,16 +39,16 @@ router.get('/tenants/:tenantId/grant-requests/subject/:subjectUid', async (req: 
   }
 });
 
-// GET /tenants/:tenantId/grant-requests - Get all tenant grant requests
-router.get('/tenants/:tenantId/grant-requests', async (req: Request, res: Response) => {
+// GET /tenants/:schemaName/grant-requests - Get all tenant grant requests
+router.get('/tenants/:schemaName/grant-requests', async (req: Request, res: Response) => {
   try {
     const status = req.query.status as string;
     let requests;
     
     if (status === 'pending') {
-      requests = await getPendingGrantRequestsByTenant(req.params.tenantId);
+      requests = await getPendingGrantRequestsByTenant(req.params.schemaName);
     } else {
-      requests = await getGrantRequestsByTenant(req.params.tenantId);
+      requests = await getGrantRequestsByTenant(req.params.schemaName);
     }
     
     res.json(requests);
@@ -58,10 +58,10 @@ router.get('/tenants/:tenantId/grant-requests', async (req: Request, res: Respon
   }
 });
 
-// PUT /tenants/:tenantId/grant-requests/:uid/approve - Approve grant request
-router.put('/tenants/:tenantId/grant-requests/:uid/approve', async (req: Request, res: Response) => {
+// PUT /tenants/:schemaName/grant-requests/:uid/approve - Approve grant request
+router.put('/tenants/:schemaName/grant-requests/:uid/approve', async (req: Request, res: Response) => {
   try {
-    const grantRequest = await approveGrantRequest(req.params.tenantId, req.params.uid);
+    const grantRequest = await approveGrantRequest(req.params.schemaName, req.params.uid);
     res.json(grantRequest);
   } catch (error) {
     console.error('Error approving grant request:', error);
@@ -69,10 +69,10 @@ router.put('/tenants/:tenantId/grant-requests/:uid/approve', async (req: Request
   }
 });
 
-// PUT /tenants/:tenantId/grant-requests/:uid/reject - Reject grant request
-router.put('/tenants/:tenantId/grant-requests/:uid/reject', async (req: Request, res: Response) => {
+// PUT /tenants/:schemaName/grant-requests/:uid/reject - Reject grant request
+router.put('/tenants/:schemaName/grant-requests/:uid/reject', async (req: Request, res: Response) => {
   try {
-    const grantRequest = await rejectGrantRequest(req.params.tenantId, req.params.uid);
+    const grantRequest = await rejectGrantRequest(req.params.schemaName, req.params.uid);
     res.json(grantRequest);
   } catch (error) {
     console.error('Error rejecting grant request:', error);
@@ -80,10 +80,10 @@ router.put('/tenants/:tenantId/grant-requests/:uid/reject', async (req: Request,
   }
 });
 
-// DELETE /tenants/:tenantId/grant-requests/:uid - Delete grant request
-router.delete('/tenants/:tenantId/grant-requests/:uid', async (req: Request, res: Response) => {
+// DELETE /tenants/:schemaName/grant-requests/:uid - Delete grant request
+router.delete('/tenants/:schemaName/grant-requests/:uid', async (req: Request, res: Response) => {
   try {
-    await deleteGrantRequest(req.params.tenantId, req.params.uid);
+    await deleteGrantRequest(req.params.schemaName, req.params.uid);
     res.status(204).send();
   } catch (error) {
     console.error('Error deleting grant request:', error);

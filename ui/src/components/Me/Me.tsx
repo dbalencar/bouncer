@@ -151,8 +151,8 @@ const Me: React.FC = () => {
       {selectedTenant && selectedSubject && (
         <>
           <div className="context-card">
-            <GrantRequestList 
-              tenantId={selectedTenant.id} 
+            <GrantRequestList
+              schemaName={selectedTenant.schema_name}
               subjectUid={selectedSubject.uid}
               onRequestCreated={handleRequestCreated}
             />
@@ -185,7 +185,7 @@ const Me: React.FC = () => {
               <>
                 <div className="form-header">
                   <h3>Request New Grant</h3>
-                  <button 
+                  <button
                     onClick={() => setShowRequestForm(false)}
                     className="button"
                   >
@@ -193,7 +193,7 @@ const Me: React.FC = () => {
                   </button>
                 </div>
                 <GrantRequestForm
-                  tenantId={selectedTenant.id}
+                  schemaName={selectedTenant.schema_name}
                   subjectUid={selectedSubject.uid}
                   onRequestCreated={() => {
                     handleRequestCreated();

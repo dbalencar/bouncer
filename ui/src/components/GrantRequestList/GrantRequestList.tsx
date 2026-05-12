@@ -4,24 +4,24 @@ import { GrantRequest } from '../../types';
 import './GrantRequestList.css';
 
 interface GrantRequestListProps {
-  tenantId: string;
+  schemaName: string;
   subjectUid: string;
   onRequestDelete?: () => void;
 }
 
-const GrantRequestList: React.FC<GrantRequestListProps> = ({ tenantId, subjectUid, onRequestDelete }) => {
+const GrantRequestList: React.FC<GrantRequestListProps> = ({ schemaName, subjectUid, onRequestDelete }) => {
   const [requests, setRequests] = useState<GrantRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadRequests();
-  }, [tenantId, subjectUid]);
+  }, [schemaName, subjectUid]);
 
   const loadRequests = async () => {
     try {
       setLoading(true);
-      const data = await grantRequestApi.getBySubject(tenantId, subjectUid);
+      const data = await grantRequestApi.getBySubject(schemaName, subjectUid);
       setRequests(data);
       setError(null);
     } catch (err) {
@@ -36,7 +36,7 @@ const GrantRequestList: React.FC<GrantRequestListProps> = ({ tenantId, subjectUi
     if (!window.confirm('Are you sure you want to delete this grant request?')) return;
 
     try {
-      await grantRequestApi.delete(tenantId, uid);
+      await grantRequestApi.delete(schemaName, uid);
       loadRequests();
       if (onRequestDelete) onRequestDelete();
     } catch (err) {

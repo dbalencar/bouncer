@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { grantApi, roleApi, resourceGroupApi, resourceApi as resourceServiceApi } from '../../services/api';
+import { grantRequestApi, roleApi, resourceGroupApi, resourceApi as resourceServiceApi } from '../../services/api';
 import { Role, ResourceGroup, Resource } from '../../types';
 import './GrantRequestForm.css';
 
 interface GrantRequestFormProps {
-  tenantId: string;
+  schemaName: string;
   subjectUid: string;
   onRequestCreated?: () => void;
 }
@@ -18,7 +18,7 @@ interface PathOption {
   label?: string;
 }
 
-const GrantRequestForm: React.FC<GrantRequestFormProps> = ({ tenantId, subjectUid, onRequestCreated }) => {
+const GrantRequestForm: React.FC<GrantRequestFormProps> = ({ schemaName, subjectUid, onRequestCreated }) => {
   const [roles, setRoles] = useState<Role[]>([]);
   const [resourceGroups, setResourceGroups] = useState<ResourceGroup[]>([]);
   const [resources, setResources] = useState<Resource[]>([]);
@@ -34,7 +34,7 @@ const GrantRequestForm: React.FC<GrantRequestFormProps> = ({ tenantId, subjectUi
     loadRoles();
     loadResourceGroups();
     loadResources();
-  }, [tenantId]);
+  }, [schemaName]);
 
   useEffect(() => {
     // Build path options from groups and resources
@@ -81,7 +81,7 @@ const GrantRequestForm: React.FC<GrantRequestFormProps> = ({ tenantId, subjectUi
 
   const loadRoles = async () => {
     try {
-      const data = await roleApi.getByTenant(tenantId);
+      const data = await roleApi.getByTenant(schemaName);
       setRoles(data);
     } catch (err) {
       console.error('Failed to load roles:', err);
@@ -90,7 +90,7 @@ const GrantRequestForm: React.FC<GrantRequestFormProps> = ({ tenantId, subjectUi
 
   const loadResourceGroups = async () => {
     try {
-      const data = await resourceGroupApi.getByTenant(tenantId);
+      const data = await resourceGroupApi.getByTenant(schemaName);
       setResourceGroups(data);
     } catch (err) {
       console.error('Failed to load resource groups:', err);
@@ -99,7 +99,7 @@ const GrantRequestForm: React.FC<GrantRequestFormProps> = ({ tenantId, subjectUi
 
   const loadResources = async () => {
     try {
-      const data = await resourceServiceApi.getByTenant(tenantId);
+      const data = await resourceServiceApi.getByTenant(schemaName);
       setResources(data);
     } catch (err) {
       console.error('Failed to load resources:', err);
@@ -115,7 +115,7 @@ const GrantRequestForm: React.FC<GrantRequestFormProps> = ({ tenantId, subjectUi
 
     try {
       setLoading(true);
-      await grantApi.create(tenantId, {
+      await grantRequestApi.create(schemaName, {
         subject_uid: subjectUid,
         path: selectedPath,
         role_uid: selectedRoleUid,

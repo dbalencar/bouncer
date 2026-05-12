@@ -36,10 +36,10 @@ const Admin: React.FC = () => {
       const requestsByTenant: Record<string, GrantRequest[]> = {};
       for (const tenant of tenantsWhereAdmin) {
         try {
-          const requests = await grantRequestApi.getByTenant(tenant.id, 'pending');
+          const requests = await grantRequestApi.getByTenant(tenant.schema_name, 'pending');
           requestsByTenant[tenant.id] = requests;
         } catch (err) {
-          console.error(`Failed to load requests for tenant ${tenant.id}:`, err);
+          console.error(`Failed to load requests for tenant ${tenant.schema_name}:`, err);
           requestsByTenant[tenant.id] = [];
         }
       }
@@ -56,22 +56,22 @@ const Admin: React.FC = () => {
     navigate(`/tenants/${tenant.id}/policies`);
   };
 
-  const handleApproveRequest = async (tenantId: string, requestUid: string) => {
+  const handleApproveRequest = async (schemaName: string, requestUid: string) => {
     if (!window.confirm('Are you sure you want to approve this grant request?')) return;
 
     try {
-      await grantRequestApi.approve(tenantId, requestUid);
+      await grantRequestApi.approve(schemaName, requestUid);
       loadAdminTenants();
     } catch (err) {
       console.error('Failed to approve request:', err);
     }
   };
 
-  const handleRejectRequest = async (tenantId: string, requestUid: string) => {
+  const handleRejectRequest = async (schemaName: string, requestUid: string) => {
     if (!window.confirm('Are you sure you want to reject this grant request?')) return;
 
     try {
-      await grantRequestApi.reject(tenantId, requestUid);
+      await grantRequestApi.reject(schemaName, requestUid);
       loadAdminTenants();
     } catch (err) {
       console.error('Failed to reject request:', err);
@@ -130,13 +130,13 @@ const Admin: React.FC = () => {
                         <p><strong>Role:</strong> {request.role_uid}</p>
                         <div className="request-actions">
                           <button
-                            onClick={() => handleApproveRequest(tenant.id, request.uid)}
+                            onClick={() => handleApproveRequest(tenant.schema_name, request.uid)}
                             className="button button-success"
                           >
                             Approve
                           </button>
                           <button
-                            onClick={() => handleRejectRequest(tenant.id, request.uid)}
+                            onClick={() => handleRejectRequest(tenant.schema_name, request.uid)}
                             className="button button-danger"
                           >
                             Reject

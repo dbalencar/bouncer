@@ -70,6 +70,14 @@ export const createTenant = async (request: CreateTenantRequest): Promise<Tenant
       [request.admin_uid, '/*', adminRole.uid]
     );
 
+    // Create the grant_requests trigger for the new schema
+    await client.query(`
+      CREATE TRIGGER trigger_update_${schemaName}_grant_requests_updated_at
+      BEFORE UPDATE ON ${schemaName}.grant_requests
+      FOR EACH ROW
+      EXECUTE FUNCTION update_tenant_template_grant_requests_updated_at()
+    `);
+
     await client.query('COMMIT');
     return insertResult.rows[0];
   } catch (error) {
@@ -93,6 +101,11 @@ export const getTenantById = async (id: string): Promise<Tenant | null> => {
 
 export const getTenantByName = async (name: string): Promise<Tenant | null> => {
   const result = await query('SELECT * FROM tenants WHERE name = $1', [name]);
+  return result.rows[0] || null;
+};
+
+export const getTenantBySchemaName = async (schemaName: string): Promise<Tenant | null> => {
+  const result = await query('SELECT * FROM tenants WHERE schema_name = $1', [schemaName]);
   return result.rows[0] || null;
 };
 
