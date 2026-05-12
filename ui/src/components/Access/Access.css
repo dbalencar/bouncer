@@ -61,6 +61,35 @@
   color: #fff;
 }
 
+.grant-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.grant-header p {
+  margin: 0;
+}
+
+.resource-type-badge {
+  font-size: 0.7rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.resource-type-badge.resource {
+  background-color: #28a745;
+  color: white;
+}
+
+.resource-type-badge.group {
+  background-color: #ffc107;
+  color: #333;
+}
+
 .permissions-section {
   margin: 0.75rem 0;
   padding: 0.5rem;

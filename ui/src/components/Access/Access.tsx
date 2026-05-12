@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTenant } from '../../context/TenantContext';
 import { useSubject } from '../../context/SubjectContext';
-import { grantApi, grantRequestApi, roleApi, permissionApi } from '../../services/api';
-import { Grant, GrantRequest, Role, Permission } from '../../types';
+import { grantApi, grantRequestApi, roleApi, permissionApi, resourceGroupApi, resourceApi as resourceServiceApi } from '../../services/api';
+import { Grant, GrantRequest, Role, Permission, ResourceGroup, Resource } from '../../types';
 import GrantRequestList from '../GrantRequestList/GrantRequestList';
 import GrantRequestForm from '../GrantRequestForm/GrantRequestForm';
 import './Access.css';
@@ -11,10 +11,14 @@ import './Access.css';
 interface GrantWithDetails extends Grant {
   roleName?: string;
   permissions?: Permission[];
+  resourceName?: string;
+  resourceType?: 'resource' | 'group';
 }
 
 const Access: React.FC = () => {
   const [currentTenantGrants, setCurrentTenantGrants] = useState<GrantWithDetails[]>([]);
+  const [resources, setResources] = useState<Resource[]>([]);
+  const [resourceGroups, setResourceGroups] = useState<ResourceGroup[]>([]);
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const { selectedTenant, setTenant } = useTenant();
@@ -23,9 +27,25 @@ const Access: React.FC = () => {
 
   useEffect(() => {
     if (selectedTenant && selectedSubject) {
+      loadResourcesAndGroups();
       loadCurrentTenantGrants();
     }
   }, [selectedTenant, selectedSubject]);
+
+  const loadResourcesAndGroups = async () => {
+    if (!selectedTenant) return;
+
+    try {
+      const [resourcesData, groupsData] = await Promise.all([
+        resourceServiceApi.getByTenant(selectedTenant.id),
+        resourceGroupApi.getByTenant(selectedTenant.id),
+      ]);
+      setResources(resourcesData);
+      setResourceGroups(groupsData);
+    } catch (err) {
+      console.error('Failed to load resources and groups:', err);
+    }
+  };
 
   const loadCurrentTenantGrants = async () => {
     if (!selectedTenant || !selectedSubject) {
@@ -42,10 +62,31 @@ const Access: React.FC = () => {
           try {
             const role = await roleApi.getByUid(selectedTenant.id, grant.role_uid);
             const permissions = await roleApi.getPermissions(selectedTenant.id, role.uid);
+
+            // Try to match path to a resource or group
+            let resourceName: string | undefined;
+            let resourceType: 'resource' | 'group' | undefined;
+
+            // First try to match as a resource
+            const resource = resources.find(r => r.path === grant.path);
+            if (resource) {
+              resourceName = resource.name;
+              resourceType = 'resource';
+            } else {
+              // Then try to match as a resource group
+              const group = resourceGroups.find(g => g.path === grant.path);
+              if (group) {
+                resourceName = group.name;
+                resourceType = 'group';
+              }
+            }
+
             return {
               ...grant,
               roleName: role.name,
               permissions: permissions,
+              resourceName: resourceName,
+              resourceType: resourceType,
             };
           } catch (err) {
             console.error(`Failed to load details for grant ${grant.uid}:`, err);
@@ -133,7 +174,14 @@ const Access: React.FC = () => {
           <div className="grant-grid">
             {currentTenantGrants.map((grant) => (
               <div key={grant.uid} className="grant-card">
-                <p><strong>Path:</strong> {grant.path}</p>
+                <div className="grant-header">
+                  <p><strong>Resource:</strong> {grant.resourceName || grant.path}</p>
+                  {grant.resourceType && (
+                    <span className={`resource-type-badge ${grant.resourceType}`}>
+                      {grant.resourceType}
+                    </span>
+                  )}
+                </div>
                 <p><strong>Role:</strong> {grant.roleName || grant.role_uid}</p>
                 {grant.permissions && grant.permissions.length > 0 && (
                   <div className="permissions-section">
