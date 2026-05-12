@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Subject, Tenant, Policy, Permission, Role, PolicyEvaluationRequest, PolicyEvaluationResponse, ResourceGroup, Resource } from '../types';
+import { Subject, Tenant, Policy, Permission, Role, PolicyEvaluationRequest, PolicyEvaluationResponse, ResourceGroup, Resource, Grant } from '../types';
 
 const API_BASE_URL = '/api';
 
@@ -192,6 +192,42 @@ export const resourceApi = {
 
   delete: async (tenantId: string, uid: string): Promise<void> => {
     await api.delete(`/tenants/${tenantId}/resources/${uid}`);
+  },
+};
+
+export const grantApi = {
+  getByTenant: async (tenantId: string): Promise<Grant[]> => {
+    const response = await api.get(`/tenants/${tenantId}/grants`);
+    return response.data;
+  },
+
+  getByUid: async (tenantId: string, uid: string): Promise<Grant> => {
+    const response = await api.get(`/tenants/${tenantId}/grants/${uid}`);
+    return response.data;
+  },
+
+  getBySubject: async (tenantId: string, subjectUid: string): Promise<Grant[]> => {
+    const response = await api.get(`/tenants/${tenantId}/grants/subject/${subjectUid}`);
+    return response.data;
+  },
+
+  getByRole: async (tenantId: string, roleUid: string): Promise<Grant[]> => {
+    const response = await api.get(`/tenants/${tenantId}/grants/role/${roleUid}`);
+    return response.data;
+  },
+
+  create: async (tenantId: string, grant: { subject_uid: string; path: string; role_uid: string }): Promise<Grant> => {
+    const response = await api.post(`/tenants/${tenantId}/grants`, grant);
+    return response.data;
+  },
+
+  update: async (tenantId: string, uid: string, grant: { subject_uid?: string; path?: string; role_uid?: string }): Promise<Grant> => {
+    const response = await api.put(`/tenants/${tenantId}/grants/${uid}`, grant);
+    return response.data;
+  },
+
+  delete: async (tenantId: string, uid: string): Promise<void> => {
+    await api.delete(`/tenants/${tenantId}/grants/${uid}`);
   },
 };
 

@@ -95,6 +95,24 @@ CREATE INDEX idx_tenant_template_resources_id ON tenant_template.resources(id);
 CREATE INDEX idx_tenant_template_resources_group ON tenant_template.resources(group_uid);
 CREATE INDEX idx_tenant_template_resources_path ON tenant_template.resources(path);
 
+-- Create grants table in tenant template
+CREATE TABLE tenant_template.grants (
+    uid UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    subject_uid UUID NOT NULL,
+    path VARCHAR(255) NOT NULL,
+    role_uid UUID NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_grants_subject FOREIGN KEY (subject_uid) REFERENCES common.subjects(uid) ON DELETE CASCADE,
+    CONSTRAINT fk_grants_role FOREIGN KEY (role_uid) REFERENCES tenant_template.roles(uid) ON DELETE CASCADE,
+    UNIQUE(subject_uid, path, role_uid)
+);
+
+-- Create index on grant subject, role, and path for efficient queries
+CREATE INDEX idx_tenant_template_grants_subject ON tenant_template.grants(subject_uid);
+CREATE INDEX idx_tenant_template_grants_role ON tenant_template.grants(role_uid);
+CREATE INDEX idx_tenant_template_grants_path ON tenant_template.grants(path);
+
 -- Create policy_evaluations log table (optional, for audit)
 CREATE TABLE tenant_template.policy_evaluations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

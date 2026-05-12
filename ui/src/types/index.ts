@@ -62,6 +62,15 @@ export interface Role {
   updated_at: string;
 }
 
+export interface Grant {
+  uid: string;
+  subject_uid: string;
+  path: string;
+  role_uid: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface PolicyEvaluationRequest {
   subjectUid: string;
   resourceType: string;

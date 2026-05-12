@@ -54,6 +54,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   Resources
                 </Link>
                 <Link
+                  to={`/tenants/${selectedTenant.id}/grants`}
+                  className={location.pathname.includes('/grants') ? 'active' : ''}
+                >
+                  Grants
+                </Link>
+                <Link
                   to={`/tenants/${selectedTenant.id}/test`}
                   className={location.pathname.includes('/test') ? 'active' : ''}
                 >

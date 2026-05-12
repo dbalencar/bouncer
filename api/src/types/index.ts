@@ -68,6 +68,15 @@ export interface RolePermission {
   created_at: Date;
 }
 
+export interface Grant {
+  uid: string;
+  subject_uid: string;
+  path: string;
+  role_uid: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
 export interface PolicyEvaluationRequest {
   subjectUid: string;
   resourceType: string;
@@ -127,4 +136,16 @@ export interface CreatePermissionRequest {
 export interface CreateRoleRequest {
   name: string;
   permission_uids?: string[];
+}
+
+export interface CreateGrantRequest {
+  subject_uid: string;
+  path: string;
+  role_uid: string;
+}
+
+export interface UpdateGrantRequest {
+  subject_uid?: string;
+  path?: string;
+  role_uid?: string;
 }
