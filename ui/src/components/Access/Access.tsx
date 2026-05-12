@@ -21,6 +21,7 @@ const Access: React.FC = () => {
   const [resourceGroups, setResourceGroups] = useState<ResourceGroup[]>([]);
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [grantRequestListKey, setGrantRequestListKey] = useState(0);
   const { selectedTenant, setTenant } = useTenant();
   const { selectedSubject } = useSubject();
   const navigate = useNavigate();
@@ -118,6 +119,8 @@ const Access: React.FC = () => {
   const handleRequestCreated = () => {
     if (selectedSubject && selectedTenant) {
       loadCurrentTenantGrants();
+      // Force GrantRequestList to remount and reload
+      setGrantRequestListKey(prev => prev + 1);
     }
   };
 
@@ -160,6 +163,7 @@ const Access: React.FC = () => {
 
       <div className="context-card">
         <GrantRequestList
+          key={grantRequestListKey}
           schemaName={selectedTenant.schema_name}
           tenantId={selectedTenant.id}
           subjectUid={selectedSubject.uid}
