@@ -35,29 +35,23 @@ export const createPermission = async (tenantId: string, request: CreatePermissi
     throw new Error('Tenant not found');
   }
 
-  // Validate that parent exists if specified
-  if (request.parent_uid) {
-    const parent = await query(
-      `SELECT * FROM ${tenant.schema_name}.permissions WHERE uid = $1`,
-      [request.parent_uid]
-    );
-    
-    if (parent.rows.length === 0) {
-      throw new Error('Parent permission not found');
-    }
+  // Require parent for new permissions (can't create root permissions)
+  if (!request.parent_uid) {
+    throw new Error('Parent permission is required. New permissions must have a parent.');
+  }
+
+  // Validate that parent exists
+  const parent = await query(
+    `SELECT * FROM ${tenant.schema_name}.permissions WHERE uid = $1`,
+    [request.parent_uid]
+  );
+  
+  if (parent.rows.length === 0) {
+    throw new Error('Parent permission not found');
   }
 
   // Build the path based on parent
-  let path = `/${request.name.toLowerCase()}`;
-  if (request.parent_uid) {
-    const parent = await query(
-      `SELECT path FROM ${tenant.schema_name}.permissions WHERE uid = $1`,
-      [request.parent_uid]
-    );
-    if (parent.rows.length > 0) {
-      path = `${parent.rows[0].path}/${request.name.toLowerCase()}`;
-    }
-  }
+  const path = `${parent.rows[0].path}/${request.name.toLowerCase()}`;
 
   const result = await query(
     `INSERT INTO ${tenant.schema_name}.permissions (name, parent_uid, path) 
@@ -136,6 +130,23 @@ export const deletePermission = async (tenantId: string, uid: string): Promise<v
     throw new Error('Tenant not found');
   }
 
+  // Get the permission to check its parent_uid
+  const permission = await query(
+    `SELECT * FROM ${tenant.schema_name}.permissions WHERE uid = $1`,
+    [uid]
+  );
+
+  if (permission.rows.length === 0) {
+    throw new Error('Permission not found');
+  }
+
+  const perm = permission.rows[0];
+
+  // Check if permission has null parent (root permission) - can't delete these
+  if (perm.parent_uid === null) {
+    throw new Error('Cannot delete root permissions (permissions with null parent)');
+  }
+
   // Check if permission has children
   const children = await query(
     `SELECT COUNT(*) as count FROM ${tenant.schema_name}.permissions WHERE parent_uid = $1`,
@@ -144,19 +155,6 @@ export const deletePermission = async (tenantId: string, uid: string): Promise<v
 
   if (parseInt(children.rows[0].count) > 0) {
     throw new Error('Cannot delete permission with child permissions. Delete children first.');
-  }
-
-  // Check if it's a base permission (read or admin)
-  const permission = await query(
-    `SELECT * FROM ${tenant.schema_name}.permissions WHERE uid = $1`,
-    [uid]
-  );
-
-  if (permission.rows.length > 0) {
-    const perm = permission.rows[0];
-    if (perm.name === 'read' || perm.name === 'admin') {
-      throw new Error('Cannot delete base permissions (read, admin)');
-    }
   }
 
   await query(

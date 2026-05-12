@@ -44,10 +44,15 @@ const PermissionList: React.FC = () => {
     e.preventDefault();
     if (!tenantId) return;
 
+    if (!formData.parent_uid) {
+      setError('Parent permission is required');
+      return;
+    }
+
     try {
       await permissionApi.create(tenantId, {
         name: formData.name,
-        parent_uid: formData.parent_uid || null
+        parent_uid: formData.parent_uid
       });
       setShowCreateForm(false);
       setFormData({ name: '', parent_uid: '' });
@@ -116,7 +121,7 @@ const PermissionList: React.FC = () => {
 
   const renderPermissionNode = (permission: any, depth = 0) => {
     const hasChildren = permission.children && permission.children.length > 0;
-    const isBase = permission.name === 'read' || permission.name === 'admin';
+    const isRoot = permission.parent_uid === null;
 
     return (
       <div key={permission.uid} className="permission-node" style={{ marginLeft: `${depth * 20}px` }}>
@@ -124,9 +129,9 @@ const PermissionList: React.FC = () => {
           <div className="permission-info">
             <span className="permission-name">{permission.name}</span>
             <span className="permission-path">{permission.path}</span>
-            {isBase && <span className="badge base">Base</span>}
+            {isRoot && <span className="badge base">Root</span>}
           </div>
-          {!isBase && (
+          {!isRoot && (
             <div className="permission-actions">
               <button onClick={() => startEdit(permission)} className="button button-primary">
                 Edit
@@ -188,8 +193,9 @@ const PermissionList: React.FC = () => {
                 value={formData.parent_uid || ''}
                 onChange={(e) => setFormData({ ...formData, parent_uid: e.target.value || null })}
                 className="input"
+                required
               >
-                <option value="">No Parent (Root Permission)</option>
+                <option value="" disabled>Select a parent permission</option>
                 {permissions
                   .filter(p => !editingPermission || p.uid !== editingPermission.uid)
                   .map(p => (
