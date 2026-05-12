@@ -24,30 +24,31 @@ const hasAdminPermissionOnPath = async (schemaName: string, subjectUid: string, 
   // Get all grants for the subject
   const grants = await getGrantsBySubject(tenant.id, subjectUid);
 
-  // For each grant, check if the role has admin permission on the path
+  // For each grant, check if the grant path matches or is a parent of the requested path
   for (const grant of grants) {
-    // Get the role
-    const role = await getRoleByUid(tenant.id, grant.role_uid);
-    if (!role) {
-      continue;
-    }
+    // Check if the grant path matches or is a parent of the requested path
+    if (path.startsWith(grant.path) || grant.path.startsWith(path)) {
+      // Get the role
+      const role = await getRoleByUid(tenant.id, grant.role_uid);
+      if (!role) {
+        continue;
+      }
 
-    // Get permissions for the role
-    const permissionsResult = await query(
-      `SELECT p.* FROM ${schemaName}.role_permissions rp
-       JOIN ${schemaName}.permissions p ON rp.permission_uid = p.uid
-       WHERE rp.role_uid = $1`,
-      [role.uid]
-    );
+      // Get permissions for the role
+      const permissionsResult = await query(
+        `SELECT p.* FROM ${schemaName}.role_permissions rp
+         JOIN ${schemaName}.permissions p ON rp.permission_uid = p.uid
+         WHERE rp.role_uid = $1`,
+        [role.uid]
+      );
 
-    // Check if any permission is named "admin" and applies to the path
-    for (const permission of permissionsResult.rows) {
-      if (permission.name.toLowerCase() === 'admin') {
-        // Check if the permission path matches or is a parent of the requested path
-        // The permission path could be an exact match or a parent path
-        if (path.startsWith(permission.path) || permission.path.startsWith(path)) {
-          return true;
-        }
+      // Check if the role has admin permission (regardless of permission path)
+      const hasAdminPermission = permissionsResult.rows.some(
+        (permission: any) => permission.name.toLowerCase() === 'admin'
+      );
+
+      if (hasAdminPermission) {
+        return true;
       }
     }
   }
