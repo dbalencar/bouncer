@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTenant } from '../../context/TenantContext';
-import { grantApi, subjectApi, roleApi } from '../../services/api';
-import { Grant, Subject, Role } from '../../types';
+import { grantApi, subjectApi, roleApi, resourceGroupApi, resourceApi as resourceServiceApi } from '../../services/api';
+import { Grant, Subject, Role, ResourceGroup, Resource } from '../../types';
 import './GrantList.css';
 
 interface GrantFormData {
@@ -11,12 +11,22 @@ interface GrantFormData {
   role_uid: string;
 }
 
+interface PathOption {
+  path: string;
+  type: 'group' | 'resource';
+  displayName: string;
+}
+
 const GrantList: React.FC = () => {
   const { tenantId } = useParams<{ tenantId: string }>();
   const { selectedTenant } = useTenant();
   const [grants, setGrants] = useState<Grant[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
+  const [resourceGroups, setResourceGroups] = useState<ResourceGroup[]>([]);
+  const [resources, setResources] = useState<Resource[]>([]);
+  const [pathOptions, setPathOptions] = useState<PathOption[]>([]);
+  const [pathSearchTerm, setPathSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -26,12 +36,15 @@ const GrantList: React.FC = () => {
     path: '',
     role_uid: '',
   });
+  const pathSelectorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (selectedTenant) {
       loadGrants();
       loadSubjects();
       loadRoles();
+      loadResourceGroups();
+      loadResources();
     }
   }, [selectedTenant]);
 
@@ -68,6 +81,68 @@ const GrantList: React.FC = () => {
       console.error('Failed to load roles:', err);
     }
   };
+
+  const loadResourceGroups = async () => {
+    if (!selectedTenant) return;
+    try {
+      const data = await resourceGroupApi.getByTenant(selectedTenant.id);
+      setResourceGroups(data);
+    } catch (err) {
+      console.error('Failed to load resource groups:', err);
+    }
+  };
+
+  const loadResources = async () => {
+    if (!selectedTenant) return;
+    try {
+      const data = await resourceServiceApi.getByTenant(selectedTenant.id);
+      setResources(data);
+    } catch (err) {
+      console.error('Failed to load resources:', err);
+    }
+  };
+
+  useEffect(() => {
+    // Build path options from groups and resources
+    const options: PathOption[] = [];
+
+    // Add group paths
+    resourceGroups.forEach(group => {
+      options.push({
+        path: group.path,
+        type: 'group',
+        displayName: group.path,
+      });
+    });
+
+    // Add resource paths
+    resources.forEach(resource => {
+      options.push({
+        path: resource.path,
+        type: 'resource',
+        displayName: resource.path,
+      });
+    });
+
+    // Sort by path ascending
+    options.sort((a, b) => a.path.localeCompare(b.path));
+
+    setPathOptions(options);
+  }, [resourceGroups, resources]);
+
+  useEffect(() => {
+    // Close dropdown when clicking outside
+    const handleClickOutside = (event: MouseEvent) => {
+      if (pathSelectorRef.current && !pathSelectorRef.current.contains(event.target as Node)) {
+        setPathSearchTerm('');
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,9 +185,15 @@ const GrantList: React.FC = () => {
 
   const resetForm = () => {
     setFormData({ subject_uid: '', path: '', role_uid: '' });
+    setPathSearchTerm('');
     setEditingGrant(null);
     setShowForm(false);
     setError(null);
+  };
+
+  const getPathType = (path: string): 'group' | 'resource' | 'custom' => {
+    const option = pathOptions.find(opt => opt.path === path);
+    return option ? option.type : 'custom';
   };
 
   const getSubjectName = (subjectUid: string) => {
@@ -174,15 +255,51 @@ const GrantList: React.FC = () => {
             </div>
             <div className="form-group">
               <label>Path:</label>
-              <input
-                type="text"
-                className="input"
-                value={formData.path}
-                onChange={(e) => setFormData({ ...formData, path: e.target.value })}
-                placeholder="/path/to/resource or /path/*"
-                required
-              />
-              <small className="form-hint">Use * for wildcard matching (e.g., /servers/*)</small>
+              <div className="path-selector" ref={pathSelectorRef}>
+                <input
+                  type="text"
+                  className="input"
+                  value={formData.path}
+                  onChange={(e) => {
+                    setFormData({ ...formData, path: e.target.value });
+                    setPathSearchTerm(e.target.value);
+                  }}
+                  placeholder="Search or type custom path..."
+                  required
+                />
+                {pathSearchTerm && (
+                  <div className="path-dropdown">
+                    {pathOptions
+                      .filter(option =>
+                        option.path.toLowerCase().includes(pathSearchTerm.toLowerCase())
+                      )
+                      .slice(0, 10)
+                      .map(option => (
+                        <div
+                          key={option.path}
+                          className={`path-dropdown-item ${option.type}`}
+                          onClick={() => {
+                            setFormData({ ...formData, path: option.path });
+                            setPathSearchTerm('');
+                          }}
+                        >
+                          <span className="path-dropdown-path">{option.path}</span>
+                          <span className={`path-badge ${option.type}`}>
+                            {option.type}
+                          </span>
+                        </div>
+                      ))}
+                    {pathOptions.filter(option =>
+                      option.path.toLowerCase().includes(pathSearchTerm.toLowerCase())
+                    ).length === 0 && (
+                      <div className="path-dropdown-item no-results">
+                        No matches found
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              <small className="form-hint">Select a path or type a custom path with wildcards (e.g., /servers/*)</small>
             </div>
             <div className="form-group">
               <label>Role:</label>
@@ -216,24 +333,32 @@ const GrantList: React.FC = () => {
         {grants.length === 0 ? (
           <div className="empty-state">No grants found</div>
         ) : (
-          grants.map(grant => (
-            <div key={grant.uid} className="grant-card">
-              <h3>{getSubjectName(grant.subject_uid)}</h3>
-              <div className="grant-meta">
-                <div>Email: {getSubjectEmail(grant.subject_uid)}</div>
-                <div>Path: {grant.path}</div>
-                <div>Role: {getRoleName(grant.role_uid)}</div>
+          grants.map(grant => {
+            const pathType = getPathType(grant.path);
+            return (
+              <div key={grant.uid} className="grant-card">
+                <h3>{getSubjectName(grant.subject_uid)}</h3>
+                <div className="grant-meta">
+                  <div>Email: {getSubjectEmail(grant.subject_uid)}</div>
+                  <div className="grant-path-row">
+                    <span>Path: {grant.path}</span>
+                    <span className={`path-badge ${pathType}`}>
+                      {pathType}
+                    </span>
+                  </div>
+                  <div>Role: {getRoleName(grant.role_uid)}</div>
+                </div>
+                <div className="grant-actions">
+                  <button className="button button-primary" onClick={() => handleEdit(grant)}>
+                    Edit
+                  </button>
+                  <button className="button button-danger" onClick={() => handleDelete(grant.uid)}>
+                    Delete
+                  </button>
+                </div>
               </div>
-              <div className="grant-actions">
-                <button className="button button-primary" onClick={() => handleEdit(grant)}>
-                  Edit
-                </button>
-                <button className="button button-danger" onClick={() => handleDelete(grant.uid)}>
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

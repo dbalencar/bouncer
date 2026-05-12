@@ -69,6 +69,75 @@
   display: block;
 }
 
+.path-selector {
+  position: relative;
+}
+
+.path-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: #2a2a2a;
+  border: 1px solid #333;
+  border-radius: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  margin-top: 4px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.path-dropdown-item {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  transition: background-color 0.2s;
+}
+
+.path-dropdown-item:hover {
+  background-color: #333;
+}
+
+.path-dropdown-item.no-results {
+  color: #888;
+  cursor: default;
+  padding: 0.75rem 1rem;
+}
+
+.path-dropdown-path {
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+}
+
+.path-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.path-badge.group {
+  background-color: #0066cc;
+  color: white;
+}
+
+.path-badge.resource {
+  background-color: #28a745;
+  color: white;
+}
+
+.path-badge.custom {
+  background-color: #6c757d;
+  color: white;
+}
+
 .form-actions {
   display: flex;
   gap: 1rem;
@@ -133,6 +202,12 @@
 
 .grant-meta div {
   margin-bottom: 0.25rem;
+}
+
+.grant-path-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .grant-actions {
