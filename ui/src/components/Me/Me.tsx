@@ -24,13 +24,6 @@ const Me: React.FC = () => {
     loadAllTenants();
   }, [selectedSubject]);
 
-  useEffect(() => {
-    // Redirect non-admin subjects to /access when they select a tenant
-    if (selectedTenant && selectedSubject && !isSubjectAdmin) {
-      navigate('/access');
-    }
-  }, [selectedTenant, selectedSubject, isSubjectAdmin, navigate]);
-
   const loadTenants = async () => {
     try {
       const data = await tenantApi.getAll();
