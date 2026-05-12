@@ -161,6 +161,7 @@ const Access: React.FC = () => {
       <div className="context-card">
         <GrantRequestList
           schemaName={selectedTenant.schema_name}
+          tenantId={selectedTenant.id}
           subjectUid={selectedSubject.uid}
           onRequestCreated={handleRequestCreated}
         />

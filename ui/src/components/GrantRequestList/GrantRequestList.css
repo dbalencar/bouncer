@@ -51,12 +51,29 @@
   gap: 0.5rem;
 }
 
-.request-path {
-  color: #fff;
-  font-family: 'Courier New', monospace;
-  font-size: 0.875rem;
+.request-resource {
+  color: #007bff;
+  font-weight: 500;
+  font-size: 0.9rem;
   flex: 1;
-  word-break: break-all;
+}
+
+.resource-type-badge {
+  font-size: 0.7rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.resource-type-badge.resource {
+  background-color: #28a745;
+  color: white;
+}
+
+.resource-type-badge.group {
+  background-color: #ffc107;
+  color: #333;
 }
 
 .request-status {
