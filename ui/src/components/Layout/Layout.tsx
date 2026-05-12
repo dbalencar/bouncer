@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTenant } from '../../context/TenantContext';
 import { useSubject } from '../../context/SubjectContext';
-import { subjectApi } from '../../services/api';
-import { Subject } from '../../types';
+import { subjectApi, tenantApi } from '../../services/api';
+import { Subject, Tenant } from '../../types';
 import './Layout.css';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -11,11 +11,13 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { selectedTenant, clearTenant } = useTenant();
   const { selectedSubject, setSubject, clearSubject } = useSubject();
   const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [tenants, setTenants] = useState<Tenant[]>([]);
   const [isLoadingSubjects, setIsLoadingSubjects] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
     loadSubjects();
+    loadTenants();
   }, []);
 
   const loadSubjects = async () => {
@@ -30,9 +32,20 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     }
   };
 
+  const loadTenants = async () => {
+    try {
+      const data = await tenantApi.getAll();
+      setTenants(data);
+    } catch (err) {
+      console.error('Failed to load tenants:', err);
+    }
+  };
+
   const handleLogin = (subject: Subject) => {
     setSubject(subject);
-    navigate('/me');
+    // Check if subject is a tenant admin
+    const isAdmin = tenants.some(t => t.admin_uid === subject.uid);
+    navigate(isAdmin ? '/admin' : '/me');
     setIsDropdownOpen(false);
   };
 
