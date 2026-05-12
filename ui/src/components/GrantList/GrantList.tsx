@@ -15,6 +15,9 @@ interface PathOption {
   path: string;
   type: 'group' | 'resource';
   displayName: string;
+  id: string;
+  name: string;
+  label?: string;
 }
 
 const GrantList: React.FC = () => {
@@ -106,21 +109,26 @@ const GrantList: React.FC = () => {
     // Build path options from groups and resources
     const options: PathOption[] = [];
 
-    // Add group paths
+    // Add group paths with all fields
     resourceGroups.forEach(group => {
       options.push({
         path: group.path,
         type: 'group',
         displayName: group.path,
+        id: group.id,
+        name: group.name,
+        label: group.label,
       });
     });
 
-    // Add resource paths
+    // Add resource paths with all fields
     resources.forEach(resource => {
       options.push({
         path: resource.path,
         type: 'resource',
         displayName: resource.path,
+        id: resource.id,
+        name: resource.name,
       });
     });
 
@@ -264,15 +272,21 @@ const GrantList: React.FC = () => {
                     setFormData({ ...formData, path: e.target.value });
                     setPathSearchTerm(e.target.value);
                   }}
-                  placeholder="Search or type custom path..."
+                  placeholder="Search by ID, name, label, or path..."
                   required
                 />
                 {pathSearchTerm && (
                   <div className="path-dropdown">
                     {pathOptions
-                      .filter(option =>
-                        option.path.toLowerCase().includes(pathSearchTerm.toLowerCase())
-                      )
+                      .filter(option => {
+                        const searchTerm = pathSearchTerm.toLowerCase();
+                        return (
+                          option.path.toLowerCase().includes(searchTerm) ||
+                          option.id.toLowerCase().includes(searchTerm) ||
+                          option.name.toLowerCase().includes(searchTerm) ||
+                          (option.label && option.label.toLowerCase().includes(searchTerm))
+                        );
+                      })
                       .slice(0, 10)
                       .map(option => (
                         <div
@@ -283,15 +297,27 @@ const GrantList: React.FC = () => {
                             setPathSearchTerm('');
                           }}
                         >
-                          <span className="path-dropdown-path">{option.path}</span>
+                          <div className="path-dropdown-info">
+                            <span className="path-dropdown-path">{option.path}</span>
+                            <span className="path-dropdown-details">
+                              {option.id} • {option.name}
+                              {option.label && ` • ${option.label}`}
+                            </span>
+                          </div>
                           <span className={`path-badge ${option.type}`}>
                             {option.type}
                           </span>
                         </div>
                       ))}
-                    {pathOptions.filter(option =>
-                      option.path.toLowerCase().includes(pathSearchTerm.toLowerCase())
-                    ).length === 0 && (
+                    {pathOptions.filter(option => {
+                      const searchTerm = pathSearchTerm.toLowerCase();
+                      return (
+                        option.path.toLowerCase().includes(searchTerm) ||
+                        option.id.toLowerCase().includes(searchTerm) ||
+                        option.name.toLowerCase().includes(searchTerm) ||
+                        (option.label && option.label.toLowerCase().includes(searchTerm))
+                      );
+                    }).length === 0 && (
                       <div className="path-dropdown-item no-results">
                         No matches found
                       </div>
@@ -299,7 +325,7 @@ const GrantList: React.FC = () => {
                   </div>
                 )}
               </div>
-              <small className="form-hint">Select a path or type a custom path with wildcards (e.g., /servers/*)</small>
+              <small className="form-hint">Search across all fields (ID, name, label, path) or type custom path with wildcards (e.g., /servers/*)</small>
             </div>
             <div className="form-group">
               <label>Role:</label>
