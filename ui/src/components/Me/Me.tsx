@@ -20,6 +20,10 @@ const Me: React.FC = () => {
   const { selectedSubject } = useSubject();
   const navigate = useNavigate();
 
+  const isSubjectAdmin = selectedSubject
+    ? tenants.some(t => t.admin_uid === selectedSubject.uid)
+    : false;
+
   useEffect(() => {
     loadTenants();
     loadAllTenants();
@@ -48,10 +52,6 @@ const Me: React.FC = () => {
       console.error('Failed to load tenants:', err);
     }
   };
-
-  const isSubjectAdmin = selectedSubject
-    ? tenants.some(t => t.admin_uid === selectedSubject.uid)
-    : false;
 
   const loadAllTenants = async () => {
     if (!selectedSubject) {
