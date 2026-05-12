@@ -12,6 +12,7 @@ import ResourceGroupList from './components/ResourceGroupList/ResourceGroupList'
 import ResourceList from './components/ResourceList/ResourceList';
 import GrantList from './components/GrantList/GrantList';
 import Me from './components/Me/Me';
+import Admin from './components/Admin/Admin';
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
               <Route path="/tenants/:tenantId/test" element={<PolicyTest />} />
               <Route path="/subjects" element={<SubjectList />} />
               <Route path="/me" element={<Me />} />
+              <Route path="/admin" element={<Admin />} />
             </Routes>
           </Layout>
         </SubjectProvider>

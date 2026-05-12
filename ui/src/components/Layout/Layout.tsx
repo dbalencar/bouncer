@@ -1,18 +1,38 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTenant } from '../../context/TenantContext';
 import { useSubject } from '../../context/SubjectContext';
+import { tenantApi } from '../../services/api';
+import { Tenant } from '../../types';
 import './Layout.css';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const { selectedTenant, clearTenant } = useTenant();
   const { selectedSubject, clearSubject } = useSubject();
+  const [tenants, setTenants] = useState<Tenant[]>([]);
+
+  useEffect(() => {
+    loadTenants();
+  }, []);
+
+  const loadTenants = async () => {
+    try {
+      const data = await tenantApi.getAll();
+      setTenants(data);
+    } catch (err) {
+      console.error('Failed to load tenants:', err);
+    }
+  };
 
   const handleClear = () => {
     clearTenant();
     clearSubject();
   };
+
+  const isSubjectAdmin = selectedSubject
+    ? tenants.some(t => t.admin_uid === selectedSubject.uid)
+    : false;
 
   return (
     <div className="layout">
@@ -29,9 +49,15 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               Subjects
             </Link>
             {selectedSubject && (
-              <Link to="/me" className={location.pathname === '/me' ? 'active' : ''}>
-                Me
-              </Link>
+              isSubjectAdmin ? (
+                <Link to="/admin" className={location.pathname === '/admin' ? 'active' : ''}>
+                  Admin
+                </Link>
+              ) : (
+                <Link to="/me" className={location.pathname === '/me' ? 'active' : ''}>
+                  Me
+                </Link>
+              )
             )}
             {selectedTenant && (
               <>
