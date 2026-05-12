@@ -34,7 +34,7 @@ function App() {
               <Route path="/tenants/:tenantId/test" element={<PolicyTest />} />
               <Route path="/subjects" element={<SubjectList />} />
               <Route path="/me" element={<Me />} />
-              <Route path="/access" element={<Access />} />
+              <Route path="/requests" element={<Access />} />
               <Route path="/admin" element={<Admin />} />
             </Routes>
           </Layout>

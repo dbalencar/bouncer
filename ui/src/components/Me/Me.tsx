@@ -30,10 +30,10 @@ const Me: React.FC = () => {
   }, [selectedSubject]);
 
   useEffect(() => {
-    // Redirect non-admin subjects to /access when tenant is selected
+    // Redirect non-admin subjects to /requests when tenant is selected
     // Only redirect after initial load to avoid redirecting on page load
     if (selectedTenant && selectedSubject && tenants.length > 0 && !isSubjectAdmin && initialTenantSet) {
-      navigate('/access');
+      navigate('/requests');
     }
   }, [selectedTenant, selectedSubject, tenants, isSubjectAdmin, initialTenantSet, navigate]);
 
@@ -101,11 +101,11 @@ const Me: React.FC = () => {
 
   const handleManageTenant = (tenant: Tenant) => {
     setTenant(tenant);
-    // Non-admins go to /access, admins go to policies
+    // Non-admins go to /requests, admins go to policies
     if (isSubjectAdmin) {
       navigate(`/tenants/${tenant.id}/policies`);
     } else {
-      navigate('/access');
+      navigate('/requests');
     }
   };
 
