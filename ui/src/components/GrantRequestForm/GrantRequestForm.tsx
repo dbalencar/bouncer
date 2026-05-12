@@ -4,6 +4,7 @@ import { Role, ResourceGroup, Resource } from '../../types';
 import './GrantRequestForm.css';
 
 interface GrantRequestFormProps {
+  tenantId: string;
   schemaName: string;
   subjectUid: string;
   onRequestCreated?: () => void;
@@ -18,7 +19,7 @@ interface PathOption {
   label?: string;
 }
 
-const GrantRequestForm: React.FC<GrantRequestFormProps> = ({ schemaName, subjectUid, onRequestCreated }) => {
+const GrantRequestForm: React.FC<GrantRequestFormProps> = ({ tenantId, schemaName, subjectUid, onRequestCreated }) => {
   const [roles, setRoles] = useState<Role[]>([]);
   const [resourceGroups, setResourceGroups] = useState<ResourceGroup[]>([]);
   const [resources, setResources] = useState<Resource[]>([]);
@@ -34,7 +35,7 @@ const GrantRequestForm: React.FC<GrantRequestFormProps> = ({ schemaName, subject
     loadRoles();
     loadResourceGroups();
     loadResources();
-  }, [schemaName]);
+  }, [tenantId]);
 
   useEffect(() => {
     // Build path options from groups and resources
@@ -81,7 +82,7 @@ const GrantRequestForm: React.FC<GrantRequestFormProps> = ({ schemaName, subject
 
   const loadRoles = async () => {
     try {
-      const data = await roleApi.getByTenant(schemaName);
+      const data = await roleApi.getByTenant(tenantId);
       setRoles(data);
     } catch (err) {
       console.error('Failed to load roles:', err);
@@ -90,7 +91,7 @@ const GrantRequestForm: React.FC<GrantRequestFormProps> = ({ schemaName, subject
 
   const loadResourceGroups = async () => {
     try {
-      const data = await resourceGroupApi.getByTenant(schemaName);
+      const data = await resourceGroupApi.getByTenant(tenantId);
       setResourceGroups(data);
     } catch (err) {
       console.error('Failed to load resource groups:', err);
@@ -99,7 +100,7 @@ const GrantRequestForm: React.FC<GrantRequestFormProps> = ({ schemaName, subject
 
   const loadResources = async () => {
     try {
-      const data = await resourceServiceApi.getByTenant(schemaName);
+      const data = await resourceServiceApi.getByTenant(tenantId);
       setResources(data);
     } catch (err) {
       console.error('Failed to load resources:', err);

@@ -43,96 +43,96 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <h1 className="logo">
             <Link to="/">Bouncer</Link>
           </h1>
-          <nav className="nav">
-            {selectedSubject && (
-              isSubjectAdmin ? (
-                <Link to="/admin" className={location.pathname === '/admin' ? 'active' : ''}>
-                  Admin
-                </Link>
+          {selectedSubject && (
+            <nav className="nav">
+              {selectedTenant ? (
+                <>
+                  {isSubjectAdmin ? (
+                    <>
+                      <Link
+                        to={`/tenants/${selectedTenant.id}/policies`}
+                        className={location.pathname.includes('/policies') ? 'active' : ''}
+                      >
+                        Policies
+                      </Link>
+                      <Link
+                        to={`/tenants/${selectedTenant.id}/permissions`}
+                        className={location.pathname.includes('/permissions') ? 'active' : ''}
+                      >
+                        Permissions
+                      </Link>
+                      <Link
+                        to={`/tenants/${selectedTenant.id}/roles`}
+                        className={location.pathname.includes('/roles') ? 'active' : ''}
+                      >
+                        Roles
+                      </Link>
+                      <Link
+                        to={`/tenants/${selectedTenant.id}/resource-groups`}
+                        className={location.pathname.includes('/resource-groups') ? 'active' : ''}
+                      >
+                        Resource Groups
+                      </Link>
+                      <Link
+                        to={`/tenants/${selectedTenant.id}/resources`}
+                        className={location.pathname.includes('/resources') ? 'active' : ''}
+                      >
+                        Resources
+                      </Link>
+                      <Link
+                        to={`/tenants/${selectedTenant.id}/grants`}
+                        className={location.pathname.includes('/grants') ? 'active' : ''}
+                      >
+                        Grants
+                      </Link>
+                    </>
+                  ) : (
+                    <>
+                      <Link to="/me" className={location.pathname === '/me' ? 'active' : ''}>
+                        Me
+                      </Link>
+                      <Link to="/access" className={location.pathname === '/access' ? 'active' : ''}>
+                        Access
+                      </Link>
+                      <Link
+                        to={`/tenants/${selectedTenant.id}/grants`}
+                        className={location.pathname.includes('/grants') ? 'active' : ''}
+                      >
+                        Grants
+                      </Link>
+                      <Link
+                        to={`/tenants/${selectedTenant.id}/test`}
+                        className={location.pathname.includes('/test') ? 'active' : ''}
+                      >
+                        Test Policy
+                      </Link>
+                    </>
+                  )}
+                  <span className="tenant-indicator">
+                    {selectedTenant.name}
+                  </span>
+                </>
               ) : (
                 <>
-                  <Link to="/me" className={location.pathname === '/me' ? 'active' : ''}>
-                    Me
-                  </Link>
-                  <Link to="/access" className={location.pathname === '/access' ? 'active' : ''}>
-                    Access
-                  </Link>
+                  {isSubjectAdmin ? (
+                    <Link to="/admin" className={location.pathname === '/admin' ? 'active' : ''}>
+                      Admin
+                    </Link>
+                  ) : (
+                    <Link to="/me" className={location.pathname === '/me' ? 'active' : ''}>
+                      Me
+                    </Link>
+                  )}
                 </>
-              )
-            )}
-            {selectedTenant && (
-              <>
-                {isSubjectAdmin ? (
-                  <>
-                    <Link
-                      to={`/tenants/${selectedTenant.id}/policies`}
-                      className={location.pathname.includes('/policies') ? 'active' : ''}
-                    >
-                      Policies
-                    </Link>
-                    <Link
-                      to={`/tenants/${selectedTenant.id}/permissions`}
-                      className={location.pathname.includes('/permissions') ? 'active' : ''}
-                    >
-                      Permissions
-                    </Link>
-                    <Link
-                      to={`/tenants/${selectedTenant.id}/roles`}
-                      className={location.pathname.includes('/roles') ? 'active' : ''}
-                    >
-                      Roles
-                    </Link>
-                    <Link
-                      to={`/tenants/${selectedTenant.id}/resource-groups`}
-                      className={location.pathname.includes('/resource-groups') ? 'active' : ''}
-                    >
-                      Resource Groups
-                    </Link>
-                    <Link
-                      to={`/tenants/${selectedTenant.id}/resources`}
-                      className={location.pathname.includes('/resources') ? 'active' : ''}
-                    >
-                      Resources
-                    </Link>
-                    <Link
-                      to={`/tenants/${selectedTenant.id}/grants`}
-                      className={location.pathname.includes('/grants') ? 'active' : ''}
-                    >
-                      Grants
-                    </Link>
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      to={`/tenants/${selectedTenant.id}/grants`}
-                      className={location.pathname.includes('/grants') ? 'active' : ''}
-                    >
-                      Grants
-                    </Link>
-                    <Link
-                      to={`/tenants/${selectedTenant.id}/test`}
-                      className={location.pathname.includes('/test') ? 'active' : ''}
-                    >
-                      Test Policy
-                    </Link>
-                  </>
-                )}
-                <span className="tenant-indicator">
-                  {selectedTenant.name}
-                </span>
-              </>
-            )}
-            {selectedSubject && (
+              )}
               <span className="subject-indicator">
                 {selectedSubject.username}
               </span>
-            )}
-            {(selectedTenant || selectedSubject) && (
               <button onClick={handleClear} className="clear-selection">
                 Clear
               </button>
-            )}
-          </nav>
+            </nav>
+          )}
         </div>
       </header>
       <main className="main">

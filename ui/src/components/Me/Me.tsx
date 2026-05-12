@@ -15,6 +15,7 @@ const Me: React.FC = () => {
   const [allTenants, setAllTenants] = useState<TenantWithAccess[]>([]);
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
+  const [initialTenantSet, setInitialTenantSet] = useState(false);
   const { selectedTenant, setTenant } = useTenant();
   const { selectedSubject } = useSubject();
   const navigate = useNavigate();
@@ -23,6 +24,21 @@ const Me: React.FC = () => {
     loadTenants();
     loadAllTenants();
   }, [selectedSubject]);
+
+  useEffect(() => {
+    // Redirect non-admin subjects to /access when tenant is selected
+    // Only redirect after initial load to avoid redirecting on page load
+    if (selectedTenant && selectedSubject && tenants.length > 0 && !isSubjectAdmin && initialTenantSet) {
+      navigate('/access');
+    }
+  }, [selectedTenant, selectedSubject, tenants, isSubjectAdmin, initialTenantSet, navigate]);
+
+  useEffect(() => {
+    // Mark that we've seen the initial tenant state
+    if (selectedTenant) {
+      setInitialTenantSet(true);
+    }
+  }, [selectedTenant]);
 
   const loadTenants = async () => {
     try {

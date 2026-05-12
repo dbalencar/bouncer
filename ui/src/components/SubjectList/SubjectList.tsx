@@ -43,9 +43,18 @@ const SubjectList: React.FC = () => {
 
   const handleActAs = (subject: Subject) => {
     setSubject(subject);
-    // Check if subject is a tenant admin
-    const isAdmin = tenants.some(t => t.admin_uid === subject.uid);
-    navigate(isAdmin ? '/admin' : '/me');
+    // Wait for tenants to load before checking admin status
+    // If tenants aren't loaded yet, default to /me
+    if (tenants.length > 0) {
+      const isAdmin = tenants.some(t => t.admin_uid === subject.uid);
+      navigate(isAdmin ? '/admin' : '/me');
+    } else {
+      // Load tenants first, then navigate
+      loadTenants().then(() => {
+        const isAdmin = tenants.some(t => t.admin_uid === subject.uid);
+        navigate(isAdmin ? '/admin' : '/me');
+      });
+    }
   };
 
   if (loading) return <div className="loading">Loading...</div>;

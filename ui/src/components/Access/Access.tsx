@@ -136,6 +136,7 @@ const Access: React.FC = () => {
               </button>
             </div>
             <GrantRequestForm
+              tenantId={selectedTenant.id}
               schemaName={selectedTenant.schema_name}
               subjectUid={selectedSubject.uid}
               onRequestCreated={() => {
