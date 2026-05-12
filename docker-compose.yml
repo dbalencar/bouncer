@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: bouncer-postgres
+    environment:
+      POSTGRES_DB: bouncer
+      POSTGRES_USER: bouncer
+      POSTGRES_PASSWORD: bouncer_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/migrations:/docker-entrypoint-initdb.d
+      - ./database/seeds/subjects.sql:/docker-entrypoint-initdb.d/003_seed_subjects.sql:ro
+    healthcheck:
+      test: pg_isready -U bouncer -d bouncer
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

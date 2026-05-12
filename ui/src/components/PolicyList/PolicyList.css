@@ -1,0 +1,190 @@
+.policy-list h2 {
+  margin-bottom: 1.5rem;
+  color: #fff;
+}
+
+.policy-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #888;
+}
+
+.error {
+  background-color: #dc3545;
+  color: white;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.policy-form {
+  background-color: #2a2a2a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.policy-form h3 {
+  margin-bottom: 1rem;
+  color: #fff;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #fff;
+}
+
+.input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #333;
+  border-radius: 4px;
+  background-color: #1a1a1a;
+  color: #fff;
+  font-size: 1rem;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #0066cc;
+}
+
+.textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #333;
+  border-radius: 4px;
+  background-color: #1a1a1a;
+  color: #fff;
+  font-size: 1rem;
+  font-family: 'Courier New', monospace;
+  resize: vertical;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: #0066cc;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+.button-primary {
+  background-color: #0066cc;
+  color: white;
+}
+
+.button-primary:hover {
+  background-color: #0052a3;
+}
+
+.button-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.button-danger:hover {
+  background-color: #c82333;
+}
+
+.policy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 1.5rem;
+}
+
+.policy-card {
+  background-color: #2a2a2a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: border-color 0.2s;
+}
+
+.policy-card:hover {
+  border-color: #0066cc;
+}
+
+.policy-card .policy-header {
+  margin-bottom: 0.75rem;
+}
+
+.policy-card h3 {
+  margin: 0;
+  color: #fff;
+}
+
+.status {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.status.active {
+  background-color: #28a745;
+  color: white;
+}
+
+.status.inactive {
+  background-color: #6c757d;
+  color: white;
+}
+
+.policy-description {
+  color: #888;
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.policy-code {
+  background-color: #1a1a1a;
+  padding: 0.75rem;
+  border-radius: 4px;
+  color: #00ff00;
+  font-size: 0.75rem;
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+.policy-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.policy-actions .button {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+.empty-state {
+  text-align: center;
+  color: #888;
+  padding: 2rem;
+}

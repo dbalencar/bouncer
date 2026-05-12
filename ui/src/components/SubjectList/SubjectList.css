@@ -1,0 +1,63 @@
+.subject-list h2 {
+  margin-bottom: 1.5rem;
+  color: #fff;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #888;
+}
+
+.error {
+  background-color: #dc3545;
+  color: white;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.subject-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.subject-card {
+  background-color: #2a2a2a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: border-color 0.2s;
+}
+
+.subject-card:hover {
+  border-color: #0066cc;
+}
+
+.subject-card h3 {
+  margin-bottom: 0.75rem;
+  color: #fff;
+}
+
+.subject-card p {
+  color: #888;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.subject-card strong {
+  color: #fff;
+}
+
+.subject-meta {
+  margin-top: 1rem;
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.empty-state {
+  text-align: center;
+  color: #888;
+  padding: 2rem;
+}

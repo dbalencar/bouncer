@@ -1,0 +1,66 @@
+export interface Subject {
+  uid: string;
+  username: string;
+  name: string;
+  email: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface Tenant {
+  id: string;
+  name: string;
+  schema_name: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface Policy {
+  id: string;
+  name: string;
+  description?: string;
+  rego_policy: string;
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface Resource {
+  id: string;
+  resource_type: string;
+  resource_id: string;
+  attributes: Record<string, any>;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface PolicyEvaluationRequest {
+  subjectUid: string;
+  resourceType: string;
+  resourceId: string;
+  action: string;
+  context?: Record<string, any>;
+}
+
+export interface PolicyEvaluationResponse {
+  allowed: boolean;
+  decision: string;
+  explanation?: string;
+}
+
+export interface CreateTenantRequest {
+  name: string;
+}
+
+export interface CreatePolicyRequest {
+  name: string;
+  description?: string;
+  rego_policy: string;
+  is_active?: boolean;
+}
+
+export interface CreateResourceRequest {
+  resource_type: string;
+  resource_id: string;
+  attributes?: Record<string, any>;
+}
