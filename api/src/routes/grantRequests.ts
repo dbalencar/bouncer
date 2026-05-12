@@ -61,7 +61,12 @@ router.get('/tenants/:schemaName/grant-requests', async (req: Request, res: Resp
 // PUT /tenants/:schemaName/grant-requests/:uid/approve - Approve grant request
 router.put('/tenants/:schemaName/grant-requests/:uid/approve', async (req: Request, res: Response) => {
   try {
-    const grantRequest = await approveGrantRequest(req.params.schemaName, req.params.uid);
+    const { approver_uid } = req.body;
+    if (!approver_uid) {
+      return res.status(400).json({ error: 'approver_uid is required' });
+    }
+
+    const grantRequest = await approveGrantRequest(req.params.schemaName, req.params.uid, approver_uid);
     res.json(grantRequest);
   } catch (error) {
     console.error('Error approving grant request:', error);
@@ -72,7 +77,12 @@ router.put('/tenants/:schemaName/grant-requests/:uid/approve', async (req: Reque
 // PUT /tenants/:schemaName/grant-requests/:uid/reject - Reject grant request
 router.put('/tenants/:schemaName/grant-requests/:uid/reject', async (req: Request, res: Response) => {
   try {
-    const grantRequest = await rejectGrantRequest(req.params.schemaName, req.params.uid);
+    const { approver_uid } = req.body;
+    if (!approver_uid) {
+      return res.status(400).json({ error: 'approver_uid is required' });
+    }
+
+    const grantRequest = await rejectGrantRequest(req.params.schemaName, req.params.uid, approver_uid);
     res.json(grantRequest);
   } catch (error) {
     console.error('Error rejecting grant request:', error);

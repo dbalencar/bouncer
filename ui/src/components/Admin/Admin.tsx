@@ -58,9 +58,10 @@ const Admin: React.FC = () => {
 
   const handleApproveRequest = async (schemaName: string, requestUid: string) => {
     if (!window.confirm('Are you sure you want to approve this grant request?')) return;
+    if (!selectedSubject) return;
 
     try {
-      await grantRequestApi.approve(schemaName, requestUid);
+      await grantRequestApi.approve(schemaName, requestUid, selectedSubject.uid);
       loadAdminTenants();
     } catch (err) {
       console.error('Failed to approve request:', err);
@@ -69,9 +70,10 @@ const Admin: React.FC = () => {
 
   const handleRejectRequest = async (schemaName: string, requestUid: string) => {
     if (!window.confirm('Are you sure you want to reject this grant request?')) return;
+    if (!selectedSubject) return;
 
     try {
-      await grantRequestApi.reject(schemaName, requestUid);
+      await grantRequestApi.reject(schemaName, requestUid, selectedSubject.uid);
       loadAdminTenants();
     } catch (err) {
       console.error('Failed to reject request:', err);

@@ -3,6 +3,7 @@ import { GrantRequest, CreateGrantRequestRequest, UpdateGrantRequestRequest } fr
 import { getSubjectByUid } from './subjectService';
 import { getRoleByUid } from './roleService';
 import { getTenantBySchemaName } from './tenantService';
+import { getGrantsBySubject } from './grantService';
 
 // Validate schema name to prevent SQL injection
 const validateSchemaName = (schemaName: string): void => {
@@ -11,6 +12,47 @@ const validateSchemaName = (schemaName: string): void => {
   if (!/^[a-zA-Z0-9_]+$/.test(schemaName)) {
     throw new Error('Invalid schema name');
   }
+};
+
+// Check if a subject has admin permission on a specific path
+const hasAdminPermissionOnPath = async (schemaName: string, subjectUid: string, path: string): Promise<boolean> => {
+  const tenant = await getTenantBySchemaName(schemaName);
+  if (!tenant) {
+    throw new Error('Invalid tenant schema');
+  }
+
+  // Get all grants for the subject
+  const grants = await getGrantsBySubject(tenant.id, subjectUid);
+
+  // For each grant, check if the role has admin permission on the path
+  for (const grant of grants) {
+    // Get the role
+    const role = await getRoleByUid(tenant.id, grant.role_uid);
+    if (!role) {
+      continue;
+    }
+
+    // Get permissions for the role
+    const permissionsResult = await query(
+      `SELECT p.* FROM ${schemaName}.role_permissions rp
+       JOIN ${schemaName}.permissions p ON rp.permission_uid = p.uid
+       WHERE rp.role_uid = $1`,
+      [role.uid]
+    );
+
+    // Check if any permission is named "admin" and applies to the path
+    for (const permission of permissionsResult.rows) {
+      if (permission.name.toLowerCase() === 'admin') {
+        // Check if the permission path matches or is a parent of the requested path
+        // The permission path could be an exact match or a parent path
+        if (path.startsWith(permission.path) || permission.path.startsWith(path)) {
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
 };
 
 export const createGrantRequest = async (schemaName: string, request: CreateGrantRequestRequest): Promise<GrantRequest> => {
@@ -89,7 +131,7 @@ export const getPendingGrantRequestsByTenant = async (schemaName: string): Promi
   return result.rows;
 };
 
-export const approveGrantRequest = async (schemaName: string, requestUid: string): Promise<GrantRequest> => {
+export const approveGrantRequest = async (schemaName: string, requestUid: string, approverUid: string): Promise<GrantRequest> => {
   validateSchemaName(schemaName);
 
   // Verify that the schema belongs to a valid tenant
@@ -116,6 +158,12 @@ export const approveGrantRequest = async (schemaName: string, requestUid: string
 
     if (request.status !== 'pending') {
       throw new Error('Grant request is not pending');
+    }
+
+    // Check if the approver has admin permission on the requested path
+    const hasAdminPermission = await hasAdminPermissionOnPath(schemaName, approverUid, request.path);
+    if (!hasAdminPermission) {
+      throw new Error('Approver does not have admin permission on the requested path');
     }
 
     // Validate that subject exists
@@ -166,13 +214,31 @@ export const approveGrantRequest = async (schemaName: string, requestUid: string
   }
 };
 
-export const rejectGrantRequest = async (schemaName: string, requestUid: string): Promise<GrantRequest> => {
+export const rejectGrantRequest = async (schemaName: string, requestUid: string, approverUid: string): Promise<GrantRequest> => {
   validateSchemaName(schemaName);
 
   // Verify that the schema belongs to a valid tenant
   const tenant = await getTenantBySchemaName(schemaName);
   if (!tenant) {
     throw new Error('Invalid tenant schema');
+  }
+
+  // Get the grant request to check the path
+  const requestResult = await query(
+    `SELECT * FROM ${schemaName}.grant_requests WHERE uid = $1`,
+    [requestUid]
+  );
+
+  if (requestResult.rows.length === 0) {
+    throw new Error('Grant request not found');
+  }
+
+  const request = requestResult.rows[0];
+
+  // Check if the approver has admin permission on the requested path
+  const hasAdminPermission = await hasAdminPermissionOnPath(schemaName, approverUid, request.path);
+  if (!hasAdminPermission) {
+    throw new Error('Approver does not have admin permission on the requested path');
   }
 
   const result = await query(

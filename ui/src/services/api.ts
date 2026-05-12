@@ -248,13 +248,13 @@ export const grantRequestApi = {
     return response.data;
   },
 
-  approve: async (schemaName: string, uid: string): Promise<GrantRequest> => {
-    const response = await api.put(`/tenants/${schemaName}/grant-requests/${uid}/approve`);
+  approve: async (schemaName: string, uid: string, approverUid: string): Promise<GrantRequest> => {
+    const response = await api.put(`/tenants/${schemaName}/grant-requests/${uid}/approve`, { approver_uid: approverUid });
     return response.data;
   },
 
-  reject: async (schemaName: string, uid: string): Promise<GrantRequest> => {
-    const response = await api.put(`/tenants/${schemaName}/grant-requests/${uid}/reject`);
+  reject: async (schemaName: string, uid: string, approverUid: string): Promise<GrantRequest> => {
+    const response = await api.put(`/tenants/${schemaName}/grant-requests/${uid}/reject`, { approver_uid: approverUid });
     return response.data;
   },
 
