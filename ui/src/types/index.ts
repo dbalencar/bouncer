@@ -34,6 +34,15 @@ export interface Resource {
   updated_at: string;
 }
 
+export interface Permission {
+  uid: string;
+  name: string;
+  parent_uid: string | null;
+  path: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface PolicyEvaluationRequest {
   subjectUid: string;
   resourceType: string;

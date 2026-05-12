@@ -18,6 +18,22 @@ CREATE TABLE tenant_template.policies (
 -- Create index on policy name
 CREATE INDEX idx_tenant_template_policies_name ON tenant_template.policies(name);
 
+-- Create permissions table in tenant template
+CREATE TABLE tenant_template.permissions (
+    uid UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(255) NOT NULL,
+    parent_uid UUID REFERENCES tenant_template.permissions(uid) ON DELETE CASCADE,
+    path VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(name)
+);
+
+-- Create index on permission name and parent
+CREATE INDEX idx_tenant_template_permissions_name ON tenant_template.permissions(name);
+CREATE INDEX idx_tenant_template_permissions_parent ON tenant_template.permissions(parent_uid);
+CREATE INDEX idx_tenant_template_permissions_path ON tenant_template.permissions(path);
+
 -- Create resources table in tenant template
 CREATE TABLE tenant_template.resources (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

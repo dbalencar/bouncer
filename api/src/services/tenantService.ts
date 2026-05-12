@@ -28,31 +28,17 @@ export const createTenant = async (request: CreateTenantRequest): Promise<Tenant
 
     for (const table of tables.rows) {
       await client.query(`
-        CREATE TABLE ${schemaName}.${table.table_name} AS 
-        SELECT * FROM tenant_template.${table.table_name} 
-        WITH NO DATA
+        CREATE TABLE ${schemaName}.${table.table_name} (LIKE tenant_template.${table.table_name} INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES)
       `);
-
-      // Copy indexes
-      const indexes = await client.query(`
-        SELECT indexname, indexdef 
-        FROM pg_indexes 
-        WHERE schemaname = 'tenant_template' 
-        AND tablename = $1
-      `, [table.table_name]);
-
-      for (const index of indexes.rows) {
-        const newIndexDef = index.indexdef
-          .replace(/tenant_template\./g, `${schemaName}.`)
-          .replace(/INDEX\s+\w+\s+/i, `INDEX ${index.indexname}_copy `);
-        
-        try {
-          await client.query(newIndexDef);
-        } catch (error) {
-          console.warn(`Failed to create index ${index.indexname}:`, error);
-        }
-      }
     }
+
+    // Seed base permissions (read and admin)
+    await client.query(`
+      INSERT INTO ${schemaName}.permissions (name, parent_uid, path) VALUES 
+      ('read', NULL, '/read'),
+      ('admin', NULL, '/admin')
+      RETURNING *
+    `);
 
     await client.query('COMMIT');
     return insertResult.rows[0];

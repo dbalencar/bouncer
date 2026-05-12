@@ -6,6 +6,7 @@ import tenantRoutes from './routes/tenants';
 import subjectRoutes from './routes/subjects';
 import policyRoutes from './routes/policies';
 import evaluateRoutes from './routes/evaluate';
+import permissionRoutes from './routes/permissions';
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ export const createApp = async (): Promise<Application> => {
   app.use('/subjects', subjectRoutes);
   app.use('/', policyRoutes);
   app.use('/', evaluateRoutes);
+  app.use('/', permissionRoutes);
 
   // Error handling middleware
   app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
