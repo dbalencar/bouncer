@@ -54,26 +54,31 @@ const Sidebar: React.FC = () => {
       { label: 'Tenants', path: tenantsPath },
     ];
 
-    // Non-admins also see Requests
-    if (!isTenantAdmin) {
-      generalItems.push({ label: 'Requests', path: '/requests' });
-    }
-
     sections.push({ items: generalItems });
 
-    // Tenant-scoped admin menu when admin has selected a tenant to manage
-    if (isTenantAdmin && selectedTenant) {
-      sections.push({
-        title: selectedTenant.name,
-        items: [
+    // Tenant-scoped menu when a tenant is selected
+    if (selectedTenant) {
+      const tenantItems: NavItem[] = [];
+
+      if (isTenantAdmin) {
+        // Admin menu items
+        tenantItems.push(
           { label: 'Permissions', path: `/tenants/${selectedTenant.id}/permissions` },
           { label: 'Roles', path: `/tenants/${selectedTenant.id}/roles` },
           { label: 'Resource Groups', path: `/tenants/${selectedTenant.id}/resource-groups` },
           { label: 'Resources', path: `/tenants/${selectedTenant.id}/resources` },
           { label: 'Grants', path: `/tenants/${selectedTenant.id}/grants` },
           { label: 'Policies', path: `/tenants/${selectedTenant.id}/policies` },
-          { label: 'Policy Test', path: `/tenants/${selectedTenant.id}/test` },
-        ],
+          { label: 'Policy Test', path: `/tenants/${selectedTenant.id}/test` }
+        );
+      }
+
+      // Requests for both admins and non-admins
+      tenantItems.push({ label: 'Requests', path: '/requests' });
+
+      sections.push({
+        title: selectedTenant.name,
+        items: tenantItems,
       });
     }
 
