@@ -19,6 +19,7 @@ const Me: React.FC = () => {
   const [resourceGroups, setResourceGroups] = useState<Record<string, ResourceGroup[]>>({});
   const [roles, setRoles] = useState<Record<string, Role[]>>({});
   const [loading, setLoading] = useState(true);
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
   const { selectedTenant, setTenant, clearTenant } = useTenant();
   const { selectedSubject } = useSubject();
   const navigate = useNavigate();
@@ -39,6 +40,14 @@ const Me: React.FC = () => {
       clearTenant();
     }
   }, [selectedSubject, tenants, isSubjectAdmin, clearTenant]);
+
+  useEffect(() => {
+    // Navigate after tenant is set in context
+    if (pendingNavigation && selectedTenant) {
+      navigate(pendingNavigation);
+      setPendingNavigation(null);
+    }
+  }, [selectedTenant, pendingNavigation, navigate]);
 
   useEffect(() => {
     // Load resources, resource groups, and roles for all tenants
@@ -133,10 +142,11 @@ const Me: React.FC = () => {
   const handleManageTenant = (tenant: Tenant) => {
     setTenant(tenant);
     // Non-admins go to /requests, admins go to grants
+    // Use pending navigation to ensure tenant is set in context before navigating
     if (isSubjectAdmin) {
-      navigate(`/tenants/${tenant.id}/grants`);
+      setPendingNavigation(`/tenants/${tenant.id}/grants`);
     } else {
-      navigate('/requests');
+      setPendingNavigation('/requests');
     }
   };
 
