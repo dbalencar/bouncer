@@ -69,7 +69,8 @@ const Sidebar: React.FC = () => {
           { label: 'Resources', path: `/tenants/${selectedTenant.id}/resources` },
           { label: 'Grants', path: `/tenants/${selectedTenant.id}/grants` },
           { label: 'Policies', path: `/tenants/${selectedTenant.id}/policies` },
-          { label: 'Policy Test', path: `/tenants/${selectedTenant.id}/test` }
+          { label: 'Policy Test', path: `/tenants/${selectedTenant.id}/test` },
+          { label: 'Audit Log', path: `/tenants/${selectedTenant.id}/audit-log` }
         );
       } else {
         // Requests only for non-admins

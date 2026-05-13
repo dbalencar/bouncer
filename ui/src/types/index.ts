@@ -98,3 +98,26 @@ export interface PolicyEvaluationResponse {
   decision: string;
   explanation?: string;
 }
+
+export interface AuditLog {
+  id: string;
+  actor_uid: string | null;
+  action: string;
+  entity_type: string;
+  entity_id: string | null;
+  details: Record<string, any> | null;
+  created_at: string;
+}
+
+export interface AuditLogPage {
+  items: AuditLog[];
+  total: number;
+}
+
+export interface AuditLogQuery {
+  limit?: number;
+  offset?: number;
+  actor_uid?: string;
+  entity_type?: string;
+  action?: string;
+}

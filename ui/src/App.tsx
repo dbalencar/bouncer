@@ -12,6 +12,7 @@ import RoleList from './components/RoleList/RoleList';
 import ResourceGroupList from './components/ResourceGroupList/ResourceGroupList';
 import ResourceList from './components/ResourceList/ResourceList';
 import GrantList from './components/GrantList/GrantList';
+import AuditLogList from './components/AuditLogList/AuditLogList';
 import Me from './components/Me/Me';
 import Admin from './components/Admin/Admin';
 import Access from './components/Access/Access';
@@ -31,6 +32,7 @@ function App() {
               <Route path="/tenants/:tenantId/resource-groups" element={<ResourceGroupList />} />
               <Route path="/tenants/:tenantId/resources" element={<ResourceList />} />
               <Route path="/tenants/:tenantId/grants" element={<GrantList />} />
+              <Route path="/tenants/:tenantId/audit-log" element={<AuditLogList />} />
               <Route path="/tenants/:tenantId/test" element={<PolicyTest />} />
               <Route path="/subjects" element={<SubjectList />} />
               <Route path="/me" element={<Me />} />
