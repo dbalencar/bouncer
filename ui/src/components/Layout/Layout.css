@@ -26,16 +26,11 @@
   backdrop-filter: blur(8px);
 }
 
-.top-bar-left { flex: 1; min-width: 0; }
-
-.page-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text);
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.top-bar-left {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
 }
 
 .top-bar-right {

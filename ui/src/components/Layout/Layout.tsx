@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useTenant } from '../../context/TenantContext';
 import { useSubject } from '../../context/SubjectContext';
 import { subjectApi, tenantApi } from '../../services/api';
@@ -10,7 +10,6 @@ import './Layout.css';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { clearTenant } = useTenant();
   const { selectedSubject, setSubject, clearSubject } = useSubject();
   const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -58,38 +57,13 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     navigate('/');
   };
 
-  const getPageTitle = () => {
-    const path = location.pathname;
-    if (path === '/') return 'Home';
-    if (path === '/me') return 'Me';
-    if (path === '/requests') return 'Requests';
-    if (path === '/admin') return 'Admin';
-    if (path === '/tenants') return 'Tenants';
-    if (path === '/subjects') return 'Subjects';
-    if (path.startsWith('/tenants/')) {
-      const parts = path.split('/');
-      if (parts.length >= 3) {
-        const tenantId = parts[2];
-        const tenant = tenants.find(t => t.id === tenantId);
-        if (parts[3] === 'policies') return `${tenant?.name || 'Tenant'} - Policies`;
-        if (parts[3] === 'permissions') return `${tenant?.name || 'Tenant'} - Permissions`;
-        if (parts[3] === 'roles') return `${tenant?.name || 'Tenant'} - Roles`;
-        if (parts[3] === 'resource-groups') return `${tenant?.name || 'Tenant'} - Resource Groups`;
-        if (parts[3] === 'resources') return `${tenant?.name || 'Tenant'} - Resources`;
-        if (parts[3] === 'grants') return `${tenant?.name || 'Tenant'} - Grants`;
-        if (parts[3] === 'test') return `${tenant?.name || 'Tenant'} - Test Policy`;
-      }
-    }
-    return 'Bouncer';
-  };
-
   return (
     <div className="layout">
       <Sidebar />
       <div className="main-content">
         <header className="top-bar">
           <div className="top-bar-left">
-            <h1 className="page-title">{getPageTitle()}</h1>
+            <Breadcrumb />
           </div>
           <div className="top-bar-right">
             {selectedSubject ? (
@@ -134,7 +108,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </div>
         </header>
         <main className="main">
-          <Breadcrumb />
           {children}
         </main>
       </div>

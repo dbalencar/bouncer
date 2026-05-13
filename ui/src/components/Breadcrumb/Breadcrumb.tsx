@@ -78,10 +78,6 @@ const Breadcrumb: React.FC = () => {
 
   const breadcrumbs = generateBreadcrumbs();
 
-  if (breadcrumbs.length === 1) {
-    return null; // Don't show breadcrumbs if we're on the home page
-  }
-
   return (
     <nav className="breadcrumb">
       {breadcrumbs.map((breadcrumb, index) => {

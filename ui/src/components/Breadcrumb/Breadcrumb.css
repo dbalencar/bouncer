@@ -1,26 +1,35 @@
 .breadcrumb {
-  padding: 1rem 0;
-  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
   font-size: 0.875rem;
+  line-height: 1.25;
 }
 
 .breadcrumb-item {
-  color: var(--primary);
+  color: var(--text-muted);
   text-decoration: none;
-  transition: color 0.2s;
+  transition: color 0.15s ease;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
 }
 
 .breadcrumb-item:hover {
-  color: var(--primary-hover);
-  text-decoration: underline;
+  color: var(--text);
+  background-color: var(--bg-hover);
 }
 
 .breadcrumb-active {
-  color: var(--text-muted);
+  color: var(--text);
+  font-weight: 500;
   cursor: default;
+  padding: var(--space-1) var(--space-2);
 }
 
+.breadcrumb-active:hover { background-color: transparent; }
+
 .breadcrumb-separator {
-  margin: 0 0.5rem;
   color: var(--text-dim);
+  margin: 0 var(--space-1);
+  user-select: none;
 }
