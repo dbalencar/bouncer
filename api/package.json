@@ -2,6 +2,21 @@
   "name": "bouncer-api",
   "version": "1.0.0",
   "description": "Bouncer PDP API - Policy Decision Point",
+  "bouncer": {
+    "authModes": {
+      "note": "JSON has no comments; this block documents how to switch the API between mocked-subject and real OIDC. Edit api/.env to flip modes.",
+      "mock": {
+        "env": "AUTH_MODE=mock",
+        "behavior": "Trust X-Actor-Uid header. Every route is open. Path-admin grant gate enforces only when the header is set."
+      },
+      "oidc": {
+        "env": "AUTH_MODE=oidc + OIDC_ISSUER + OIDC_AUDIENCE",
+        "behavior": "Verify Authorization: Bearer <jwt> against OIDC_ISSUER's JWKS. Required on every non-public route (allowlist: /health, /openapi.*, /docs, /auth/config). On first login the API JIT-creates a common.subjects row from the token's preferred_username/email/sub.",
+        "keycloakDev": "OIDC_ISSUER=http://localhost:8080/realms/bouncer ; OIDC_AUDIENCE=bouncer-ui",
+        "oktaProd": "OIDC_ISSUER=https://<tenant>.okta.com/oauth2/default ; OIDC_AUDIENCE=<api-audience-from-okta>"
+      }
+    }
+  },
   "main": "dist/server.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",

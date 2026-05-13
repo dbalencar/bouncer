@@ -5,6 +5,25 @@ import { authMeApi, tenantApi } from '../../services/api';
 import { useSubject } from '../../context/SubjectContext';
 import './AuthCallback.css';
 
+// React.StrictMode (main.tsx) double-invokes effects in dev. Without a
+// module-level guard both mounts call signinRedirectCallback() with the
+// same auth code — Keycloak consumes the first and rejects the second
+// with "code not valid". Cache the in-flight exchange so both effects
+// share one result.
+let callbackPromise: ReturnType<typeof exchangeCode> | null = null;
+
+const exchangeCode = async () => {
+  const userManager = getUserManager();
+  await userManager.signinRedirectCallback();
+};
+
+const runCallbackOnce = (): Promise<void> => {
+  if (!callbackPromise) {
+    callbackPromise = exchangeCode();
+  }
+  return callbackPromise;
+};
+
 const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
   const { setSubject } = useSubject();
@@ -14,8 +33,7 @@ const AuthCallback: React.FC = () => {
     let cancelled = false;
     const finishLogin = async () => {
       try {
-        const userManager = getUserManager();
-        await userManager.signinRedirectCallback();
+        await runCallbackOnce();
         // Bearer is now available via the configured access token
         // provider; fetch our resolved local Subject.
         const me = await authMeApi.get();

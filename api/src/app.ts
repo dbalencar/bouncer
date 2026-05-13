@@ -16,7 +16,7 @@ import auditLogRoutes from './routes/auditLogs';
 import authRoutes from './routes/auth';
 import { auditLogger } from './middleware/auditLogger';
 import { authMiddleware } from './middleware/auth';
-import { getAuthConfig } from './config/auth';
+import { getAuthConfig, assertAuthConfigValid } from './config/auth';
 
 dotenv.config();
 
@@ -42,7 +42,10 @@ export const createApp = async (): Promise<Application> => {
   });
 
   // Log the auth posture loudly at boot — easy to miss otherwise.
+  // Validate required vars so an oidc-mode misconfig fails here once
+  // instead of spamming a stack trace on every request.
   const authConfig = getAuthConfig();
+  assertAuthConfigValid(authConfig);
   console.log(`Auth mode: ${authConfig.mode}${authConfig.mode === 'oidc' ? ` (issuer: ${authConfig.issuer})` : ''}`);
 
   // Auth middleware: in mock mode reads X-Actor-Uid; in oidc mode

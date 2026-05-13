@@ -20,6 +20,20 @@ export const getAuthConfig = (): AuthConfig => {
   };
 };
 
+// Fail fast at boot if OIDC mode is selected without the required vars.
+// Without this, every request that tries to verify a token throws and
+// the API spams logs with the same stack trace — calling this once at
+// startup surfaces the misconfiguration immediately.
+export const assertAuthConfigValid = (config: AuthConfig): void => {
+  if (config.mode === 'oidc' && !config.issuer) {
+    throw new Error(
+      'AUTH_MODE=oidc requires OIDC_ISSUER to be set ' +
+        '(see api/.env.example). For Keycloak in docker-compose use ' +
+        'OIDC_ISSUER=http://localhost:8080/realms/bouncer.'
+    );
+  }
+};
+
 let jwksCache: ReturnType<typeof createRemoteJWKSet> | null = null;
 let cachedIssuer: string | null = null;
 
