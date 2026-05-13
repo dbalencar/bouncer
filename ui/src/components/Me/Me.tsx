@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTenant } from '../../context/TenantContext';
 import { useSubject } from '../../context/SubjectContext';
@@ -20,6 +20,7 @@ const Me: React.FC = () => {
   const [roles, setRoles] = useState<Record<string, Role[]>>({});
   const [loading, setLoading] = useState(true);
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
+  const tenantSetForNavigationRef = useRef(false);
   const { selectedTenant, setTenant, clearTenant } = useTenant();
   const { selectedSubject } = useSubject();
   const navigate = useNavigate();
@@ -36,8 +37,8 @@ const Me: React.FC = () => {
   useEffect(() => {
     // Clear selected tenant for non-admins when navigating to /me
     // This allows them to switch tenants from /requests
-    // Skip if we're in the middle of a pending navigation
-    if (selectedTenant && selectedSubject && tenants.length > 0 && !isSubjectAdmin && !pendingNavigation) {
+    // Skip if tenant was set for navigation or if we're in the middle of a pending navigation
+    if (selectedTenant && selectedSubject && tenants.length > 0 && !isSubjectAdmin && !pendingNavigation && !tenantSetForNavigationRef.current) {
       clearTenant();
     }
   }, [selectedSubject, tenants, isSubjectAdmin, clearTenant, pendingNavigation]);
@@ -47,6 +48,7 @@ const Me: React.FC = () => {
     if (pendingNavigation && selectedTenant) {
       navigate(pendingNavigation);
       setPendingNavigation(null);
+      tenantSetForNavigationRef.current = false;
     }
   }, [selectedTenant, pendingNavigation, navigate]);
 
@@ -142,6 +144,7 @@ const Me: React.FC = () => {
 
   const handleManageTenant = (tenant: Tenant) => {
     setTenant(tenant);
+    tenantSetForNavigationRef.current = true;
     // Non-admins go to /requests, admins go to grants
     // Use pending navigation to ensure tenant is set in context before navigating
     if (isSubjectAdmin) {
