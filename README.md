@@ -205,6 +205,12 @@ The following subjects are seeded for demo purposes:
 
 ## API Endpoints
 
+Interactive documentation is served by the API itself:
+- `GET /docs` — Swagger UI loaded from CDN, "Try it out" against the
+  running server
+- `GET /openapi.yaml` and `GET /openapi.json` — the OpenAPI 3.1 spec
+  (`api/openapi.yaml` in the repo)
+
 ### Tenants
 - `GET /tenants` - List all tenants
 - `POST /tenants` - Create new tenant

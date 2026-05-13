@@ -14,6 +14,7 @@ import grantRoutes from './routes/grants';
 import grantRequestRoutes from './routes/grantRequests';
 import auditLogRoutes from './routes/auditLogs';
 import authRoutes from './routes/auth';
+import docsRoutes from './routes/docs';
 import { auditLogger } from './middleware/auditLogger';
 import { authMiddleware } from './middleware/auth';
 import { getAuthConfig, assertAuthConfigValid } from './config/auth';
@@ -40,6 +41,10 @@ export const createApp = async (): Promise<Application> => {
   app.get('/health', (req, res) => {
     res.json({ status: 'healthy', timestamp: new Date().toISOString() });
   });
+
+  // API docs (no audit instrumentation; auth middleware allowlists
+  // /docs and /openapi.* so they're reachable without a token).
+  app.use('/', docsRoutes);
 
   // Log the auth posture loudly at boot — easy to miss otherwise.
   // Validate required vars so an oidc-mode misconfig fails here once

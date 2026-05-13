@@ -1,0 +1,1145 @@
+openapi: 3.1.0
+info:
+  title: Bouncer API
+  version: 1.0.0
+  description: |
+    Bouncer is a Policy Decision Point (PDP) for authorization policy
+    management and evaluation, built on OPA/Rego. Each tenant has an
+    isolated PostgreSQL schema. Subjects are mocked (no real OIDC).
+
+    Most routes are scoped under `/tenants/:tenantId/...` where
+    `tenantId` is the tenant's UUID. Grant request routes are an
+    exception and use the tenant's `:schemaName` instead (e.g.
+    `tenant_acme`); both are noted on the relevant operations.
+
+    Write endpoints accept an optional `X-Actor-Uid` header naming the
+    acting subject. The audit log uses it to attribute writes, and
+    `POST/PUT/DELETE /tenants/:tenantId/grants` enforces it: a non-
+    tenant-admin actor must hold an `admin` permission on a path
+    overlapping the grant's path (bidirectional prefix). When the
+    header is absent, mutations pass through — consistent with the
+    rest of the mocked-subject auth.
+servers:
+  - url: http://localhost:3001
+    description: Local dev
+tags:
+  - name: Health
+  - name: Tenants
+  - name: Subjects
+  - name: Policies
+  - name: Evaluate
+  - name: Permissions
+  - name: Roles
+  - name: Resource Groups
+  - name: Resources
+  - name: Grants
+  - name: Grant Requests
+  - name: Audit Logs
+  - name: Docs
+security:
+  - ActorUid: []
+  - {}
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: healthy }
+                  timestamp: { type: string, format: date-time }
+
+  /tenants:
+    get:
+      tags: [Tenants]
+      summary: List tenants
+      responses:
+        '200':
+          description: Tenants
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Tenant' }
+        '500': { $ref: '#/components/responses/ServerError' }
+    post:
+      tags: [Tenants]
+      summary: Create tenant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateTenantRequest' }
+      responses:
+        '201':
+          description: Created tenant
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Tenant' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /tenants/{id}:
+    parameters:
+      - $ref: '#/components/parameters/TenantId'
+    get:
+      tags: [Tenants]
+      summary: Get tenant
+      responses:
+        '200':
+          description: Tenant
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Tenant' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Tenants]
+      summary: Delete tenant (and its schema)
+      responses:
+        '204': { description: Deleted }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  /subjects:
+    get:
+      tags: [Subjects]
+      summary: List subjects
+      responses:
+        '200':
+          description: Subjects
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Subject' }
+  /subjects/{uid}:
+    parameters:
+      - in: path
+        name: uid
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Subjects]
+      summary: Get subject by UID
+      responses:
+        '200':
+          description: Subject
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Subject' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /subjects/username/{username}:
+    parameters:
+      - in: path
+        name: username
+        required: true
+        schema: { type: string }
+    get:
+      tags: [Subjects]
+      summary: Get subject by username
+      responses:
+        '200':
+          description: Subject
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Subject' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /tenants/{tenantId}/policies:
+    parameters:
+      - $ref: '#/components/parameters/TenantIdParam'
+    get:
+      tags: [Policies]
+      summary: List policies
+      responses:
+        '200':
+          description: Policies
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Policy' }
+    post:
+      tags: [Policies]
+      summary: Create policy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreatePolicyRequest' }
+      responses:
+        '201':
+          description: Created policy
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Policy' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /tenants/{tenantId}/policies/{id}:
+    parameters:
+      - $ref: '#/components/parameters/TenantIdParam'
+      - in: path
+        name: id
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Policies]
+      summary: Get policy
+      responses:
+        '200':
+          description: Policy
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Policy' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Policies]
+      summary: Update policy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdatePolicyRequest' }
+      responses:
+        '200':
+          description: Updated policy
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Policy' }
+    delete:
+      tags: [Policies]
+      summary: Delete policy
+      responses:
+        '204': { description: Deleted }
+
+  /tenants/{tenantId}/evaluate:
+    parameters:
+      - $ref: '#/components/parameters/TenantIdParam'
+    post:
+      tags: [Evaluate]
+      summary: Evaluate a policy decision
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PolicyEvaluationRequest' }
+      responses:
+        '200':
+          description: Decision
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PolicyEvaluationResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /tenants/{tenantId}/permissions:
+    parameters:
+      - $ref: '#/components/parameters/TenantIdParam'
+    get:
+      tags: [Permissions]
+      summary: List permissions
+      responses:
+        '200':
+          description: Permissions
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Permission' }
+    post:
+      tags: [Permissions]
+      summary: Create permission (must have a parent)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreatePermissionRequest' }
+      responses:
+        '201':
+          description: Created permission
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Permission' }
+  /tenants/{tenantId}/permissions/{uid}:
+    parameters:
+      - $ref: '#/components/parameters/TenantIdParam'
+      - $ref: '#/components/parameters/UidPath'
+    get:
+      tags: [Permissions]
+      summary: Get permission
+      responses:
+        '200':
+          description: Permission
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Permission' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Permissions]
+      summary: Update permission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                parent_uid: { type: [string, "null"], format: uuid }
+      responses:
+        '200':
+          description: Updated permission
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Permission' }
+    delete:
+      tags: [Permissions]
+      summary: Delete permission (must have no children; root permissions cannot be deleted)
+      responses:
+        '204': { description: Deleted }
+
+  /tenants/{tenantId}/roles:
+    parameters:
+      - $ref: '#/components/parameters/TenantIdParam'
+    get:
+      tags: [Roles]
+      summary: List roles
+      responses:
+        '200':
+          description: Roles
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Role' }
+    post:
+      tags: [Roles]
+      summary: Create role
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateRoleRequest' }
+      responses:
+        '201':
+          description: Created role
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Role' }
+  /tenants/{tenantId}/roles/{uid}:
+    parameters:
+      - $ref: '#/components/parameters/TenantIdParam'
+      - $ref: '#/components/parameters/UidPath'
+    get:
+      tags: [Roles]
+      summary: Get role
+      responses:
+        '200':
+          description: Role
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Role' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Roles]
+      summary: Update role (rename and/or replace permission list)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                permission_uids:
+                  type: array
+                  items: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Updated role
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Role' }
+    delete:
+      tags: [Roles]
+      summary: Delete role
+      responses:
+        '204': { description: Deleted }
+  /tenants/{tenantId}/roles/{uid}/permissions:
+    parameters:
+      - $ref: '#/components/parameters/TenantIdParam'
+      - $ref: '#/components/parameters/UidPath'
+    get:
+      tags: [Roles]
+      summary: List permissions assigned to a role
+      responses:
+        '200':
+          description: Permissions
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Permission' }
+
+  /tenants/{tenantId}/resource-groups:
+    parameters:
+      - $ref: '#/components/parameters/TenantIdParam'
+    get:
+      tags: [Resource Groups]
+      summary: List resource groups
+      responses:
+        '200':
+          description: Resource groups
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ResourceGroup' }
+    post:
+      tags: [Resource Groups]
+      summary: Create resource group
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateResourceGroupRequest' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ResourceGroup' }
+  /tenants/{tenantId}/resource-groups/{uid}:
+    parameters:
+      - $ref: '#/components/parameters/TenantIdParam'
+      - $ref: '#/components/parameters/UidPath'
+    get:
+      tags: [Resource Groups]
+      summary: Get resource group
+      responses:
+        '200':
+          description: Resource group
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ResourceGroup' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Resource Groups]
+      summary: Update resource group
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateResourceGroupRequest' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ResourceGroup' }
+    delete:
+      tags: [Resource Groups]
+      summary: Delete resource group (must be empty of children and resources)
+      responses:
+        '204': { description: Deleted }
+  /tenants/{tenantId}/resource-groups/{uid}/resources:
+    parameters:
+      - $ref: '#/components/parameters/TenantIdParam'
+      - $ref: '#/components/parameters/UidPath'
+    get:
+      tags: [Resource Groups]
+      summary: List resources in a group
+      responses:
+        '200':
+          description: Resources
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Resource' }
+
+  /tenants/{tenantId}/resources:
+    parameters:
+      - $ref: '#/components/parameters/TenantIdParam'
+    get:
+      tags: [Resources]
+      summary: List resources
+      responses:
+        '200':
+          description: Resources
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Resource' }
+    post:
+      tags: [Resources]
+      summary: Create resource
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateResourceRequest' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Resource' }
+  /tenants/{tenantId}/resources/{uid}:
+    parameters:
+      - $ref: '#/components/parameters/TenantIdParam'
+      - $ref: '#/components/parameters/UidPath'
+    get:
+      tags: [Resources]
+      summary: Get resource
+      responses:
+        '200':
+          description: Resource
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Resource' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Resources]
+      summary: Update resource
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateResourceRequest' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Resource' }
+    delete:
+      tags: [Resources]
+      summary: Delete resource
+      responses:
+        '204': { description: Deleted }
+
+  /tenants/{tenantId}/grants:
+    parameters:
+      - $ref: '#/components/parameters/TenantIdParam'
+    get:
+      tags: [Grants]
+      summary: List grants
+      responses:
+        '200':
+          description: Grants
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Grant' }
+    post:
+      tags: [Grants]
+      summary: Create grant
+      description: |
+        Requires `X-Actor-Uid` to be either the tenant admin or a
+        subject that has admin permission on a path overlapping the
+        grant's `path`. If the header is omitted the call still
+        succeeds (mocked auth posture).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateGrantRequest' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Grant' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /tenants/{tenantId}/grants/{uid}:
+    parameters:
+      - $ref: '#/components/parameters/TenantIdParam'
+      - $ref: '#/components/parameters/UidPath'
+    get:
+      tags: [Grants]
+      summary: Get grant
+      responses:
+        '200':
+          description: Grant
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Grant' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Grants]
+      summary: Update grant
+      description: |
+        Same authorization rule as create. For path changes, the actor
+        must hold admin permission on both the current and the new
+        path.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateGrantRequest' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Grant' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Grants]
+      summary: Delete grant
+      description: Same authorization rule as update (on the current path).
+      responses:
+        '204': { description: Deleted }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /tenants/{tenantId}/grants/subject/{subjectUid}:
+    parameters:
+      - $ref: '#/components/parameters/TenantIdParam'
+      - in: path
+        name: subjectUid
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Grants]
+      summary: List grants for a subject
+      responses:
+        '200':
+          description: Grants
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Grant' }
+  /tenants/{tenantId}/grants/role/{roleUid}:
+    parameters:
+      - $ref: '#/components/parameters/TenantIdParam'
+      - in: path
+        name: roleUid
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Grants]
+      summary: List grants for a role
+      responses:
+        '200':
+          description: Grants
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Grant' }
+  /tenants/{tenantId}/admin-paths:
+    parameters:
+      - $ref: '#/components/parameters/TenantIdParam'
+      - in: query
+        name: subject_uid
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Grants]
+      summary: List paths on which a subject has the `admin` permission
+      description: |
+        Walks the subject's grants, follows each role to its permissions,
+        and returns the deduplicated paths whose role contains a
+        permission named `admin` (case-insensitive). Drives the
+        `/access` UI page.
+      responses:
+        '200':
+          description: Admin paths
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminPathsResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /tenants/{schemaName}/grant-requests:
+    parameters:
+      - $ref: '#/components/parameters/SchemaNameParam'
+    get:
+      tags: [Grant Requests]
+      summary: List grant requests for a tenant
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [pending]
+          description: When set to `pending`, only pending requests are returned.
+      responses:
+        '200':
+          description: Grant requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/GrantRequest' }
+    post:
+      tags: [Grant Requests]
+      summary: Create a grant request (status = pending)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateGrantRequestRequest' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GrantRequest' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /tenants/{schemaName}/grant-requests/subject/{subjectUid}:
+    parameters:
+      - $ref: '#/components/parameters/SchemaNameParam'
+      - in: path
+        name: subjectUid
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Grant Requests]
+      summary: List a subject's grant requests
+      responses:
+        '200':
+          description: Grant requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/GrantRequest' }
+  /tenants/{schemaName}/grant-requests/{uid}/approve:
+    parameters:
+      - $ref: '#/components/parameters/SchemaNameParam'
+      - $ref: '#/components/parameters/UidPath'
+    put:
+      tags: [Grant Requests]
+      summary: Approve a grant request
+      description: |
+        `approver_uid` must hold admin permission on a path overlapping
+        the request's path. Approving creates the corresponding grant
+        and marks the request `approved`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [approver_uid]
+              properties:
+                approver_uid: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Updated request
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GrantRequest' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /tenants/{schemaName}/grant-requests/{uid}/reject:
+    parameters:
+      - $ref: '#/components/parameters/SchemaNameParam'
+      - $ref: '#/components/parameters/UidPath'
+    put:
+      tags: [Grant Requests]
+      summary: Reject a grant request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [approver_uid]
+              properties:
+                approver_uid: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Updated request
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GrantRequest' }
+  /tenants/{schemaName}/grant-requests/{uid}:
+    parameters:
+      - $ref: '#/components/parameters/SchemaNameParam'
+      - $ref: '#/components/parameters/UidPath'
+    delete:
+      tags: [Grant Requests]
+      summary: Delete a grant request
+      responses:
+        '204': { description: Deleted }
+
+  /tenants/{tenantId}/audit-logs:
+    parameters:
+      - $ref: '#/components/parameters/TenantIdParam'
+      - in: query
+        name: limit
+        schema: { type: integer, minimum: 1, maximum: 500, default: 50 }
+      - in: query
+        name: offset
+        schema: { type: integer, minimum: 0, default: 0 }
+      - in: query
+        name: actor_uid
+        schema: { type: string, format: uuid }
+      - in: query
+        name: entity_type
+        schema:
+          type: string
+          enum:
+            [policy, permission, role, resource_group, resource, grant, grant_request]
+      - in: query
+        name: action
+        schema:
+          type: string
+          enum: [create, update, delete, approve, reject]
+    get:
+      tags: [Audit Logs]
+      summary: List audit log entries for a tenant
+      responses:
+        '200':
+          description: Page of audit log entries
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuditLogPage' }
+
+  /openapi.yaml:
+    get:
+      tags: [Docs]
+      summary: Get this OpenAPI document as YAML
+      security: []
+      responses:
+        '200':
+          description: OpenAPI YAML
+          content:
+            text/yaml: {}
+  /openapi.json:
+    get:
+      tags: [Docs]
+      summary: Get this OpenAPI document as JSON
+      security: []
+      responses:
+        '200':
+          description: OpenAPI JSON
+          content:
+            application/json: {}
+  /docs:
+    get:
+      tags: [Docs]
+      summary: Interactive Swagger UI for this API
+      security: []
+      responses:
+        '200':
+          description: HTML page
+          content:
+            text/html: {}
+
+components:
+  securitySchemes:
+    ActorUid:
+      type: apiKey
+      in: header
+      name: X-Actor-Uid
+      description: |
+        UUID of the acting subject. Optional in general (mocked auth);
+        required-in-effect for grant mutations when the actor is not
+        the tenant admin.
+
+  parameters:
+    TenantId:
+      in: path
+      name: id
+      required: true
+      schema: { type: string, format: uuid }
+    TenantIdParam:
+      in: path
+      name: tenantId
+      required: true
+      schema: { type: string, format: uuid }
+    SchemaNameParam:
+      in: path
+      name: schemaName
+      required: true
+      schema:
+        type: string
+        pattern: '^[a-zA-Z0-9_]+$'
+        example: tenant_acme
+    UidPath:
+      in: path
+      name: uid
+      required: true
+      schema: { type: string, format: uuid }
+
+  responses:
+    BadRequest:
+      description: Validation error
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: Actor not authorized
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error: { type: string }
+        message: { type: string }
+
+    Subject:
+      type: object
+      required: [uid, username, name, email, created_at, updated_at]
+      properties:
+        uid: { type: string, format: uuid }
+        username: { type: string }
+        name: { type: string }
+        email: { type: string, format: email }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    Tenant:
+      type: object
+      required: [id, name, schema_name, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        schema_name: { type: string }
+        admin_uid: { type: [string, "null"], format: uuid }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    CreateTenantRequest:
+      type: object
+      required: [name, admin_uid]
+      properties:
+        name: { type: string }
+        admin_uid: { type: string, format: uuid }
+
+    Policy:
+      type: object
+      required: [id, name, rego_policy, is_active, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: [string, "null"] }
+        rego_policy: { type: string }
+        is_active: { type: boolean }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    CreatePolicyRequest:
+      type: object
+      required: [name, rego_policy]
+      properties:
+        name: { type: string }
+        description: { type: string }
+        rego_policy: { type: string }
+        is_active: { type: boolean, default: true }
+    UpdatePolicyRequest:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+        rego_policy: { type: string }
+        is_active: { type: boolean }
+
+    Permission:
+      type: object
+      required: [uid, name, path, created_at, updated_at]
+      properties:
+        uid: { type: string, format: uuid }
+        name: { type: string }
+        parent_uid: { type: [string, "null"], format: uuid }
+        path: { type: string }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    CreatePermissionRequest:
+      type: object
+      required: [name, parent_uid]
+      properties:
+        name: { type: string }
+        parent_uid: { type: string, format: uuid }
+
+    Role:
+      type: object
+      required: [uid, name, created_at, updated_at]
+      properties:
+        uid: { type: string, format: uuid }
+        name: { type: string }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    CreateRoleRequest:
+      type: object
+      required: [name, permission_uids]
+      properties:
+        name: { type: string }
+        permission_uids:
+          type: array
+          items: { type: string, format: uuid }
+          minItems: 1
+
+    ResourceGroup:
+      type: object
+      required: [uid, id, name, label, path, created_at, updated_at]
+      properties:
+        uid: { type: string, format: uuid }
+        id: { type: string }
+        name: { type: string }
+        label: { type: string }
+        parent_uid: { type: [string, "null"], format: uuid }
+        path: { type: string }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    CreateResourceGroupRequest:
+      type: object
+      required: [id, name, label]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        label: { type: string }
+        parent_uid: { type: string, format: uuid }
+    UpdateResourceGroupRequest:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        label: { type: string }
+        parent_uid: { type: string, format: uuid }
+
+    Resource:
+      type: object
+      required: [uid, id, name, path, created_at, updated_at]
+      properties:
+        uid: { type: string, format: uuid }
+        id: { type: string }
+        name: { type: string }
+        group_uid: { type: [string, "null"], format: uuid }
+        path: { type: string }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    CreateResourceRequest:
+      type: object
+      required: [id, name]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        group_uid: { type: string, format: uuid }
+    UpdateResourceRequest:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        group_uid: { type: string, format: uuid }
+
+    Grant:
+      type: object
+      required: [uid, subject_uid, path, role_uid, created_at, updated_at]
+      properties:
+        uid: { type: string, format: uuid }
+        subject_uid: { type: string, format: uuid }
+        path: { type: string }
+        role_uid: { type: string, format: uuid }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    CreateGrantRequest:
+      type: object
+      required: [subject_uid, path, role_uid]
+      properties:
+        subject_uid: { type: string, format: uuid }
+        path: { type: string }
+        role_uid: { type: string, format: uuid }
+    UpdateGrantRequest:
+      type: object
+      properties:
+        subject_uid: { type: string, format: uuid }
+        path: { type: string }
+        role_uid: { type: string, format: uuid }
+    AdminPathsResponse:
+      type: object
+      required: [paths]
+      properties:
+        paths:
+          type: array
+          items: { type: string }
+
+    GrantRequest:
+      type: object
+      required: [uid, subject_uid, path, role_uid, status, created_at, updated_at]
+      properties:
+        uid: { type: string, format: uuid }
+        subject_uid: { type: string, format: uuid }
+        path: { type: string }
+        role_uid: { type: string, format: uuid }
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    CreateGrantRequestRequest:
+      type: object
+      required: [subject_uid, path, role_uid]
+      properties:
+        subject_uid: { type: string, format: uuid }
+        path: { type: string }
+        role_uid: { type: string, format: uuid }
+
+    PolicyEvaluationRequest:
+      type: object
+      required: [subjectUid, resourceType, resourceId, action]
+      properties:
+        subjectUid: { type: string, format: uuid }
+        resourceType: { type: string }
+        resourceId: { type: string }
+        action: { type: string }
+        context:
+          type: object
+          additionalProperties: true
+    PolicyEvaluationResponse:
+      type: object
+      required: [allowed, decision]
+      properties:
+        allowed: { type: boolean }
+        decision: { type: string }
+        explanation: { type: string }
+
+    AuditLog:
+      type: object
+      required: [id, action, entity_type, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        actor_uid: { type: [string, "null"], format: uuid }
+        action:
+          type: string
+          enum: [create, update, delete, approve, reject]
+        entity_type:
+          type: string
+          enum:
+            [policy, permission, role, resource_group, resource, grant, grant_request]
+        entity_id: { type: [string, "null"] }
+        details:
+          type: [object, "null"]
+          additionalProperties: true
+        created_at: { type: string, format: date-time }
+    AuditLogPage:
+      type: object
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/AuditLog' }
+        total: { type: integer }
