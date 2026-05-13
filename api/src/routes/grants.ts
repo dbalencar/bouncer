@@ -17,15 +17,17 @@ const router = Router();
 
 // Authorize an actor for a grant mutation on a given path. Tenant admins
 // pass through; other actors must have an "admin" role-permission on a
-// path that overlaps (bidirectional prefix). When no actor header is sent
-// (older clients), allow — matches the app's mocked-auth posture so the
-// audit log stays the source of truth.
+// path that overlaps (bidirectional prefix). The actor comes from
+// authMiddleware: in oidc mode it's derived from the verified Bearer
+// token; in mock mode it's the X-Actor-Uid header. When no actor is
+// present (mock mode without the header), allow — matches the app's
+// mocked-auth posture, audit log stays the source of truth.
 const ensureActorCanMutateGrantPath = async (
   req: Request,
   tenantId: string,
   path: string
 ): Promise<{ ok: true } | { ok: false; status: number; error: string }> => {
-  const actorUid = req.header('x-actor-uid');
+  const actorUid = req.actor?.subject_uid;
   if (!actorUid) return { ok: true };
 
   const tenant = await getTenantById(tenantId);

@@ -3,8 +3,16 @@ export interface Subject {
   username: string;
   name: string;
   email: string;
+  oidc_sub: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export type AuthMode = 'mock' | 'oidc';
+
+export interface AuthRuntimeConfig {
+  mode: AuthMode;
+  issuer?: string;
 }
 
 export interface Tenant {

@@ -1,7 +1,9 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { TenantProvider } from './context/TenantContext';
 import { SubjectProvider } from './context/SubjectContext';
+import { AuthProvider } from './context/AuthContext';
 import Layout from './components/Layout/Layout';
+import AuthCallback from './components/AuthCallback/AuthCallback';
 import Home from './components/Home/Home';
 import TenantList from './components/TenantList/TenantList';
 import PolicyList from './components/PolicyList/PolicyList';
@@ -23,25 +25,28 @@ function App() {
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <TenantProvider>
         <SubjectProvider>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/tenants" element={<TenantList />} />
-              <Route path="/tenants/:tenantId/policies" element={<PolicyList />} />
-              <Route path="/tenants/:tenantId/permissions" element={<PermissionList />} />
-              <Route path="/tenants/:tenantId/roles" element={<RoleList />} />
-              <Route path="/tenants/:tenantId/resource-groups" element={<ResourceGroupList />} />
-              <Route path="/tenants/:tenantId/resources" element={<ResourceList />} />
-              <Route path="/tenants/:tenantId/grants" element={<GrantList />} />
-              <Route path="/tenants/:tenantId/audit-log" element={<AuditLogList />} />
-              <Route path="/tenants/:tenantId/test" element={<PolicyTest />} />
-              <Route path="/subjects" element={<SubjectList />} />
-              <Route path="/me" element={<Me />} />
-              <Route path="/requests" element={<Access />} />
-              <Route path="/access" element={<AccessManager />} />
-              <Route path="/admin" element={<Admin />} />
-            </Routes>
-          </Layout>
+          <AuthProvider>
+            <Layout>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/callback" element={<AuthCallback />} />
+                <Route path="/tenants" element={<TenantList />} />
+                <Route path="/tenants/:tenantId/policies" element={<PolicyList />} />
+                <Route path="/tenants/:tenantId/permissions" element={<PermissionList />} />
+                <Route path="/tenants/:tenantId/roles" element={<RoleList />} />
+                <Route path="/tenants/:tenantId/resource-groups" element={<ResourceGroupList />} />
+                <Route path="/tenants/:tenantId/resources" element={<ResourceList />} />
+                <Route path="/tenants/:tenantId/grants" element={<GrantList />} />
+                <Route path="/tenants/:tenantId/audit-log" element={<AuditLogList />} />
+                <Route path="/tenants/:tenantId/test" element={<PolicyTest />} />
+                <Route path="/subjects" element={<SubjectList />} />
+                <Route path="/me" element={<Me />} />
+                <Route path="/requests" element={<Access />} />
+                <Route path="/access" element={<AccessManager />} />
+                <Route path="/admin" element={<Admin />} />
+              </Routes>
+            </Layout>
+          </AuthProvider>
         </SubjectProvider>
       </TenantProvider>
     </Router>

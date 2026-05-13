@@ -9,13 +9,19 @@
     "start": "node dist/server.js",
     "migrate": "ts-node src/database/migrate.ts"
   },
-  "keywords": ["pdp", "opa", "authorization", "policy"],
+  "keywords": [
+    "pdp",
+    "opa",
+    "authorization",
+    "policy"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "jose": "^6.2.3",
     "pg": "^8.11.3"
   },
   "devDependencies": {

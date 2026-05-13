@@ -23,3 +23,29 @@ export const createSubject = async (username: string, name: string, email: strin
   );
   return result.rows[0];
 };
+
+export const getSubjectByOidcSub = async (oidcSub: string): Promise<Subject | null> => {
+  const result = await query('SELECT * FROM common.subjects WHERE oidc_sub = $1', [oidcSub]);
+  return result.rows[0] || null;
+};
+
+export const setSubjectOidcSub = async (uid: string, oidcSub: string): Promise<Subject> => {
+  const result = await query(
+    'UPDATE common.subjects SET oidc_sub = $1, updated_at = CURRENT_TIMESTAMP WHERE uid = $2 RETURNING *',
+    [oidcSub, uid]
+  );
+  return result.rows[0];
+};
+
+export const createSubjectWithOidc = async (
+  username: string,
+  name: string,
+  email: string,
+  oidcSub: string
+): Promise<Subject> => {
+  const result = await query(
+    'INSERT INTO common.subjects (username, name, email, oidc_sub) VALUES ($1, $2, $3, $4) RETURNING *',
+    [username, name, email, oidcSub]
+  );
+  return result.rows[0];
+};

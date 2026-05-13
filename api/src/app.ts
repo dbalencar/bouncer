@@ -13,7 +13,10 @@ import resourceRoutes from './routes/resources';
 import grantRoutes from './routes/grants';
 import grantRequestRoutes from './routes/grantRequests';
 import auditLogRoutes from './routes/auditLogs';
+import authRoutes from './routes/auth';
 import { auditLogger } from './middleware/auditLogger';
+import { authMiddleware } from './middleware/auth';
+import { getAuthConfig } from './config/auth';
 
 dotenv.config();
 
@@ -38,10 +41,19 @@ export const createApp = async (): Promise<Application> => {
     res.json({ status: 'healthy', timestamp: new Date().toISOString() });
   });
 
+  // Log the auth posture loudly at boot — easy to miss otherwise.
+  const authConfig = getAuthConfig();
+  console.log(`Auth mode: ${authConfig.mode}${authConfig.mode === 'oidc' ? ` (issuer: ${authConfig.issuer})` : ''}`);
+
+  // Auth middleware: in mock mode reads X-Actor-Uid; in oidc mode
+  // requires a valid Bearer on every non-public route.
+  app.use(authMiddleware);
+
   // Audit logger middleware (runs before routes; logs after successful writes)
   app.use(auditLogger);
 
   // Routes
+  app.use('/auth', authRoutes);
   app.use('/tenants', tenantRoutes);
   app.use('/subjects', subjectRoutes);
   app.use('/', policyRoutes);

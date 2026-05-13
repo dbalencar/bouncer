@@ -79,7 +79,12 @@ export const auditLogger = (req: Request, res: Response, next: NextFunction): vo
     return next();
   }
 
-  const actorUid = (req.header('x-actor-uid') || req.body?.actor_uid || req.body?.approver_uid || null) as string | null;
+  // Prefer the actor resolved by authMiddleware (handles both mock and
+  // oidc modes). Fall back to body fields for the legacy approval flow
+  // where the approver UID is in the request body, not derivable from
+  // the actor (e.g. a tenant admin approving on someone else's behalf
+  // — out of scope today, but keeps audit attribution accurate).
+  const actorUid = (req.actor?.subject_uid || req.body?.actor_uid || req.body?.approver_uid || null) as string | null;
   const tenantParam = matched.match[1];
   const pathEntityId = matched.match[2] || null;
 

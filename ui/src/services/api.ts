@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Subject, Tenant, Policy, Permission, Role, PolicyEvaluationRequest, PolicyEvaluationResponse, ResourceGroup, Resource, Grant, GrantRequest, AuditLogPage, AuditLogQuery } from '../types';
+import { Subject, Tenant, Policy, Permission, Role, PolicyEvaluationRequest, PolicyEvaluationResponse, ResourceGroup, Resource, Grant, GrantRequest, AuditLogPage, AuditLogQuery, AuthMode, AuthRuntimeConfig } from '../types';
 
 const API_BASE_URL = '/api';
 
@@ -11,13 +11,31 @@ const api = axios.create({
 });
 
 let currentActorUid: string | null = null;
+let currentAuthMode: AuthMode = 'mock';
+let accessTokenProvider: (() => Promise<string | null>) | null = null;
 
 export const setApiActor = (subjectUid: string | null): void => {
   currentActorUid = subjectUid;
 };
 
-api.interceptors.request.use((config) => {
-  if (currentActorUid) {
+export const setApiAuthMode = (mode: AuthMode): void => {
+  currentAuthMode = mode;
+};
+
+export const setApiAccessTokenProvider = (
+  provider: (() => Promise<string | null>) | null
+): void => {
+  accessTokenProvider = provider;
+};
+
+api.interceptors.request.use(async (config) => {
+  if (currentAuthMode === 'oidc' && accessTokenProvider) {
+    const token = await accessTokenProvider();
+    if (token) {
+      config.headers.set('Authorization', `Bearer ${token}`);
+    }
+  } else if (currentActorUid) {
+    // Mock mode: keep today's X-Actor-Uid behavior.
     config.headers.set('X-Actor-Uid', currentActorUid);
   }
   return config;
@@ -280,6 +298,20 @@ export const grantRequestApi = {
 
   delete: async (schemaName: string, uid: string): Promise<void> => {
     await api.delete(`/tenants/${schemaName}/grant-requests/${uid}`);
+  },
+};
+
+export const authConfigApi = {
+  get: async (): Promise<AuthRuntimeConfig> => {
+    const response = await api.get('/auth/config');
+    return response.data;
+  },
+};
+
+export const authMeApi = {
+  get: async (): Promise<Subject> => {
+    const response = await api.get('/auth/me');
+    return response.data;
   },
 };
 

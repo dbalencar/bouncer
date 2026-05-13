@@ -3,6 +3,7 @@ export interface Subject {
   username: string;
   name: string;
   email: string;
+  oidc_sub: string | null;
   created_at: Date;
   updated_at: Date;
 }
