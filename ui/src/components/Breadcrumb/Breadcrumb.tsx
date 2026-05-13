@@ -34,14 +34,16 @@ const Breadcrumb: React.FC = () => {
   const generateBreadcrumbs = (): BreadcrumbItem[] => {
     const pathnames = location.pathname.split('/').filter((x) => x);
 
-    // Home path depends on authentication state and role
+    // Home/Tenants path depends on authentication state and role
     let homePath = '/';
+    let homeLabel = 'Home';
     if (selectedSubject) {
       homePath = isTenantAdmin ? '/admin' : '/me';
+      homeLabel = 'Tenants';
     }
 
     const breadcrumbs: BreadcrumbItem[] = [
-      { label: 'Home', path: homePath }
+      { label: homeLabel, path: homePath }
     ];
 
     let currentPath = '';

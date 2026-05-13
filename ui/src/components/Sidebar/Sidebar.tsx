@@ -48,10 +48,10 @@ const Sidebar: React.FC = () => {
       return sections;
     }
 
-    // Logged in: Home points to different pages based on role
-    const homePath = isTenantAdmin ? '/admin' : '/me';
+    // Logged in: Tenants points to different pages based on role
+    const tenantsPath = isTenantAdmin ? '/admin' : '/me';
     const generalItems: NavItem[] = [
-      { label: 'Home', path: homePath },
+      { label: 'Tenants', path: tenantsPath },
     ];
 
     // Non-admins also see Me and Requests
@@ -83,13 +83,13 @@ const Sidebar: React.FC = () => {
 
   const sections = getNavSections();
 
-  // Determine home path for the logo link
-  const homePath = !selectedSubject ? '/' : (isTenantAdmin ? '/admin' : '/me');
+  // Determine home/tenants path for the logo link
+  const logoPath = !selectedSubject ? '/' : (isTenantAdmin ? '/admin' : '/me');
 
   return (
     <div className="sidebar">
       <div className="sidebar-header">
-        <Link to={homePath} className="sidebar-logo">
+        <Link to={logoPath} className="sidebar-logo">
           <img src={bouncerLogo} alt="Bouncer" className="sidebar-logo-img" />
         </Link>
       </div>
