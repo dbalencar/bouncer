@@ -275,13 +275,13 @@ const Me: React.FC = () => {
                     )}
                   </>
                 ) : (
-                  <p className="no-access-text">No access - request access to manage this tenant</p>
+                  <p className="no-access-text">No access - request access to this tenant</p>
                 )}
                 <button
                   onClick={() => handleManageTenant(tenant)}
                   className="button button-primary"
                 >
-                  {tenant.hasAccess ? 'Manage' : 'Request Access'}
+                  {tenant.hasAccess ? 'Access' : 'Request Access'}
                 </button>
               </div>
             ))}
