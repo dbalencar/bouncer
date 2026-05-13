@@ -52,12 +52,12 @@ const Sidebar: React.FC = () => {
     const homePath = isTenantAdmin ? '/admin' : '/me';
     const generalItems: NavItem[] = [
       { label: 'Home', path: homePath },
-      { label: 'Requests', path: '/requests' },
     ];
 
-    // Non-admins also see Me separately
+    // Non-admins also see Me and Requests
     if (!isTenantAdmin) {
-      generalItems.splice(1, 0, { label: 'Me', path: '/me' });
+      generalItems.push({ label: 'Me', path: '/me' });
+      generalItems.push({ label: 'Requests', path: '/requests' });
     }
 
     sections.push({ items: generalItems });

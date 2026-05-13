@@ -218,22 +218,6 @@ const Me: React.FC = () => {
       <h2>Current Context</h2>
 
       <div className="context-card">
-        <h3>Acting As Subject</h3>
-        {selectedSubject ? (
-          <div className="context-info">
-            <p><strong>Username:</strong> {selectedSubject.username}</p>
-            <p><strong>Name:</strong> {selectedSubject.name}</p>
-            <p><strong>Email:</strong> {selectedSubject.email}</p>
-            <p><strong>UID:</strong> {selectedSubject.uid}</p>
-          </div>
-        ) : (
-          <p className="no-context">No subject selected</p>
-        )}
-      </div>
-
-
-
-      <div className="context-card">
         <h3>All Tenants</h3>
         {allTenants.length === 0 ? (
           <p className="no-context">No tenants available.</p>

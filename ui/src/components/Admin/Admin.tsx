@@ -97,15 +97,6 @@ const Admin: React.FC = () => {
     <div className="admin">
       <h2>Admin Dashboard</h2>
 
-      <div className="admin-info">
-        <h3>Acting As</h3>
-        <div className="subject-details">
-          <p><strong>Username:</strong> {selectedSubject.username}</p>
-          <p><strong>Name:</strong> {selectedSubject.name}</p>
-          <p><strong>Email:</strong> {selectedSubject.email}</p>
-        </div>
-      </div>
-
       <div className="admin-tenants">
         <h3>Tenants You Administer</h3>
         {adminTenants.length === 0 ? (
