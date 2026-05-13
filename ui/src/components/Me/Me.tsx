@@ -36,10 +36,11 @@ const Me: React.FC = () => {
   useEffect(() => {
     // Clear selected tenant for non-admins when navigating to /me
     // This allows them to switch tenants from /requests
-    if (selectedTenant && selectedSubject && tenants.length > 0 && !isSubjectAdmin) {
+    // Skip if we're in the middle of a pending navigation
+    if (selectedTenant && selectedSubject && tenants.length > 0 && !isSubjectAdmin && !pendingNavigation) {
       clearTenant();
     }
-  }, [selectedSubject, tenants, isSubjectAdmin, clearTenant]);
+  }, [selectedSubject, tenants, isSubjectAdmin, clearTenant, pendingNavigation]);
 
   useEffect(() => {
     // Navigate after tenant is set in context
