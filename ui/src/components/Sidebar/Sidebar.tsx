@@ -54,9 +54,8 @@ const Sidebar: React.FC = () => {
       { label: 'Tenants', path: tenantsPath },
     ];
 
-    // Non-admins also see Me and Requests
+    // Non-admins also see Requests
     if (!isTenantAdmin) {
-      generalItems.push({ label: 'Me', path: '/me' });
       generalItems.push({ label: 'Requests', path: '/requests' });
     }
 
