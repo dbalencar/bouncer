@@ -56,6 +56,11 @@ const Breadcrumb: React.FC = () => {
         return;
       }
 
+      // Skip if this path matches the home path (avoids duplicate keys)
+      if (currentPath === homePath) {
+        return;
+      }
+
       // Generate label based on the segment
       let label = segment;
 

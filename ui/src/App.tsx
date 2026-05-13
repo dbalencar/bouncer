@@ -18,7 +18,7 @@ import Access from './components/Access/Access';
 
 function App() {
   return (
-    <Router>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <TenantProvider>
         <SubjectProvider>
           <Layout>
