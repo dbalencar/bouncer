@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { tenantApi } from '../../services/api';
+import { Tenant } from '../../types';
 import './Breadcrumb.css';
 
 interface BreadcrumbItem {
@@ -9,6 +11,20 @@ interface BreadcrumbItem {
 
 const Breadcrumb: React.FC = () => {
   const location = useLocation();
+  const [tenants, setTenants] = useState<Tenant[]>([]);
+
+  useEffect(() => {
+    loadTenants();
+  }, []);
+
+  const loadTenants = async () => {
+    try {
+      const data = await tenantApi.getAll();
+      setTenants(data);
+    } catch (err) {
+      console.error('Failed to load tenants:', err);
+    }
+  };
 
   const generateBreadcrumbs = (): BreadcrumbItem[] => {
     const pathnames = location.pathname.split('/').filter((x) => x);
@@ -21,14 +37,17 @@ const Breadcrumb: React.FC = () => {
 
     pathnames.forEach((segment, index) => {
       currentPath += `/${segment}`;
-      
+
+      // Skip the 'tenants' segment
+      if (segment === 'tenants') {
+        return;
+      }
+
       // Generate label based on the segment
       let label = segment;
-      
+
       // Handle special cases
-      if (segment === 'tenants') {
-        label = 'Tenants';
-      } else if (segment === 'subjects') {
+      if (segment === 'subjects') {
         label = 'Subjects';
       } else if (segment === 'me') {
         label = 'Me';
@@ -49,25 +68,11 @@ const Breadcrumb: React.FC = () => {
       } else if (segment === 'grants') {
         label = 'Grants';
       } else if (segment === 'test') {
-        label = 'Test Policy';
-      } else if (index === 1 && segment.match(/^[0-9a-f-]{36}$/i)) {
-        // This is a tenant ID
-        label = 'Tenant';
-      } else if (index === 2 && segment === 'policies') {
-        // This is the policies page for a specific tenant
-        label = 'Policies';
-      } else if (index === 2 && segment === 'permissions') {
-        label = 'Permissions';
-      } else if (index === 2 && segment === 'roles') {
-        label = 'Roles';
-      } else if (index === 2 && segment === 'resource-groups') {
-        label = 'Resource Groups';
-      } else if (index === 2 && segment === 'resources') {
-        label = 'Resources';
-      } else if (index === 2 && segment === 'grants') {
-        label = 'Grants';
-      } else if (index === 2 && segment === 'test') {
-        label = 'Test Policy';
+        label = 'Policy Test';
+      } else if (segment.match(/^[0-9a-f-]{36}$/i)) {
+        // This is a tenant ID - look up the tenant name
+        const tenant = tenants.find(t => t.id === segment);
+        label = tenant ? tenant.name : segment;
       }
 
       breadcrumbs.push({ label, path: currentPath });
