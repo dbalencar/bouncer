@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getUserManager } from '../../config/oidc';
-import { authMeApi, tenantApi } from '../../services/api';
+import {
+  authMeApi,
+  tenantApi,
+  setApiAuthMode,
+  setApiAccessTokenProvider,
+} from '../../services/api';
 import { useSubject } from '../../context/SubjectContext';
 import './AuthCallback.css';
 
@@ -15,6 +20,18 @@ let callbackPromise: ReturnType<typeof exchangeCode> | null = null;
 const exchangeCode = async () => {
   const userManager = getUserManager();
   await userManager.signinRedirectCallback();
+  // Wire the axios interceptor here, immediately after the token is in
+  // storage. AuthProvider also configures this, but child effects fire
+  // before parent effects on mount — without this defensive wiring the
+  // /auth/me call below races AuthProvider and goes out without a
+  // Bearer, surfacing as a spurious 401 / "Login failed" toast even
+  // though the session does eventually establish via AuthProvider's
+  // restore path.
+  setApiAuthMode('oidc');
+  setApiAccessTokenProvider(async () => {
+    const u = await userManager.getUser();
+    return u?.access_token ?? null;
+  });
 };
 
 const runCallbackOnce = (): Promise<void> => {
