@@ -3,16 +3,33 @@
   "version": "1.0.0",
   "description": "Bouncer PDP UI - Policy Decision Point Management",
   "type": "module",
+  "bouncer": {
+    "authModes": {
+      "note": "JSON has no comments; this block documents how to switch the UI between mocked-subject and real OIDC. The repo ships .env.demo and .env.oidc templates with sensible defaults; .env is a symlink to whichever one you want active. The UI also reads /auth/config from the API at startup, so VITE_AUTH_MODE is just the first-render hint.",
+      "switch": "ln -sf .env.demo .env   # mock mode\nln -sf .env.oidc .env   # OIDC mode (Keycloak by default)",
+      "mock": {
+        "envFile": ".env.demo (VITE_AUTH_MODE=mock)",
+        "behavior": "Login button shows a dropdown of seeded demo subjects. Axios sends X-Actor-Uid on every API call."
+      },
+      "oidc": {
+        "envFile": ".env.oidc (VITE_AUTH_MODE=oidc + VITE_OIDC_ISSUER + VITE_OIDC_CLIENT_ID)",
+        "behavior": "Login button redirects to VITE_OIDC_ISSUER (Auth Code + PKCE). After /callback the UI calls /auth/me and stores the resolved local Subject. Axios sends Authorization: Bearer <access_token> on every API call.",
+        "keycloakDev": "VITE_OIDC_ISSUER=http://localhost:8080/realms/bouncer ; VITE_OIDC_CLIENT_ID=bouncer-ui (already in .env.oidc)",
+        "oktaProd": "Edit .env.oidc: VITE_OIDC_ISSUER=https://<tenant>.okta.com/oauth2/default ; VITE_OIDC_CLIENT_ID=<spa-client-id-from-okta>"
+      }
+    }
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
+    "axios": "^1.6.2",
+    "oidc-client-ts": "^3.5.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.21.0",
-    "axios": "^1.6.2"
+    "react-router-dom": "^6.21.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.45",

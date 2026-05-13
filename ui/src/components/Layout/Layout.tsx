@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTenant } from '../../context/TenantContext';
 import { useSubject } from '../../context/SubjectContext';
+import { useAuth } from '../../context/AuthContext';
 import { subjectApi, tenantApi } from '../../services/api';
 import { Subject, Tenant } from '../../types';
 import Breadcrumb from '../Breadcrumb/Breadcrumb';
@@ -10,17 +10,19 @@ import './Layout.css';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
-  const { clearTenant } = useTenant();
-  const { selectedSubject, setSubject, clearSubject } = useSubject();
+  const { selectedSubject } = useSubject();
+  const { mode, ready, login, logout } = useAuth();
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [isLoadingSubjects, setIsLoadingSubjects] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
-    loadSubjects();
+    if (mode === 'mock') {
+      loadSubjects();
+    }
     loadTenants();
-  }, []);
+  }, [mode]);
 
   const loadSubjects = async () => {
     setIsLoadingSubjects(true);
@@ -43,18 +45,19 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     }
   };
 
-  const handleLogin = (subject: Subject) => {
-    setSubject(subject);
-    // Check if subject is a tenant admin
-    const isAdmin = tenants.some(t => t.admin_uid === subject.uid);
+  const handleMockLogin = async (subject: Subject) => {
+    await login(subject);
+    const isAdmin = tenants.some((t) => t.admin_uid === subject.uid);
     navigate(isAdmin ? '/admin' : '/me');
     setIsDropdownOpen(false);
   };
 
-  const handleLogout = () => {
-    clearSubject();
-    clearTenant();
-    navigate('/');
+  const handleOidcLogin = async () => {
+    await login();
+  };
+
+  const handleLogout = async () => {
+    await logout();
   };
 
   return (
@@ -76,6 +79,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   Logout
                 </button>
               </>
+            ) : !ready ? (
+              <span className="subject-indicator">Loading…</span>
+            ) : mode === 'oidc' ? (
+              <button className="dropdown-button" onClick={handleOidcLogin}>
+                Login with SSO
+              </button>
             ) : (
               <div style={{ position: 'relative' }}>
                 <button
@@ -95,7 +104,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                         <button
                           key={subject.uid}
                           className="dropdown-item"
-                          onClick={() => handleLogin(subject)}
+                          onClick={() => handleMockLogin(subject)}
                         >
                           {subject.name}
                         </button>

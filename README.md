@@ -13,7 +13,9 @@ A 3-tier application for authorization policy management and evaluation using OP
 - Multi-tenant architecture with isolated schemas
 - Policy management (create, read, update, delete)
 - Policy evaluation with OPA/Rego
-- Subject management (mock OIDC/Okta subjects)
+- Two authentication modes (see [Authentication](#authentication)):
+  **mock** subject picker for demos / dev, and **OIDC** against
+  Keycloak (dev) or Okta (prod) for real SSO
 - Policy testing playground
 - Per-tenant audit log of writes (policies, permissions, roles,
   resource groups, resources, grants, grant requests) with actor,
@@ -21,6 +23,103 @@ A 3-tier application for authorization policy management and evaluation using OP
 - Delegated grant management via `/access`: subjects holding a role with
   the `admin` permission on a path can view, edit and delete grants on
   that path without being tenant admins
+
+## Authentication
+
+Bouncer ships with two interchangeable auth modes selected by env var.
+Both API and UI read the same setting; the UI also fetches
+`GET /auth/config` from the API at startup so the runtime mode is
+always the source of truth.
+
+### Switching modes (`.env` symlink)
+
+Each app ships two ready-to-use env templates and `.env` is a symlink
+that points at whichever one you want active. Switching is just
+re-pointing the symlink and restarting the relevant dev server.
+
+```bash
+# Demo / mock-subject mode
+cd api && ln -sf .env.demo .env && cd ../ui && ln -sf .env.demo .env
+
+# OIDC / Keycloak (or Okta) mode
+cd api && ln -sf .env.oidc .env && cd ../ui && ln -sf .env.oidc .env
+```
+
+`.env.demo` and `.env.oidc` are committed templates with sensible local
+defaults (Keycloak URLs already filled in for the dev IdP shipped via
+`docker-compose.yml`). `.env` itself is git-ignored, so each developer
+freely flips the symlink without affecting the repo. Both apps must
+agree — keep their symlinks pointed at the same variant.
+
+### Mock mode (default)
+
+`AUTH_MODE=mock` on the API, `VITE_AUTH_MODE=mock` on the UI. The
+Login button shows a dropdown of demo subjects. The UI sends the
+selected subject's UID as `X-Actor-Uid` on every API call. Routes are
+open. Grant mutations enforce a path-admin check only if the header is
+set. This is the historical behavior — useful when you don't want to
+run Keycloak.
+
+### OIDC mode
+
+`AUTH_MODE=oidc` on the API, `VITE_AUTH_MODE=oidc` on the UI. The
+Login button redirects to the configured IdP (Authorization Code +
+PKCE). After the callback the UI calls `GET /auth/me`, which returns
+the resolved local `Subject` row — JIT-created if no row already
+matches the token's `preferred_username` or `oidc_sub`. The UI then
+sends `Authorization: Bearer <access_token>` on every API call. **In
+OIDC mode every non-public route requires a valid token**; the
+allowlist is `/health`, `/openapi.*`, `/docs`, and `/auth/config`.
+
+### Dev IdP: Keycloak
+
+A `keycloak` service is included in `docker-compose.yml`. Bringing the
+stack up imports `keycloak/bouncer-realm.json` which contains:
+
+- Realm: `bouncer`
+- Public client: `bouncer-ui` (PKCE, redirect URIs
+  `http://localhost:5173/*`, audience mapper for `bouncer-ui`)
+- Nine demo users mirroring the DB seed
+
+| Username | Email                 | Password   |
+| -------- | --------------------- | ---------- |
+| admin    | admin@bouncer.demo    | `password` |
+| dev      | dev@bouncer.demo      | `password` |
+| owner    | owner@bouncer.demo    | `password` |
+| l6       | l6@bouncer.demo       | `password` |
+| l5       | l5@bouncer.demo       | `password` |
+| l4       | l4@bouncer.demo       | `password` |
+| l3       | l3@bouncer.demo       | `password` |
+| audit    | audit@bouncer.demo    | `password` |
+| sec      | sec@bouncer.demo      | `password` |
+
+**These credentials are for the local demo only — do not reuse them
+anywhere else.** The Keycloak admin console is at
+`http://localhost:8080` with `admin` / `admin`.
+
+### Switching to Okta
+
+Production deployments swap Keycloak for Okta with no code changes:
+
+1. Register a new SPA in Okta with the same redirect URIs and PKCE
+   enabled. Note the client ID and the authorization server issuer URL
+   (e.g. `https://<your-tenant>.okta.com/oauth2/default`).
+2. On the API set:
+   ```
+   AUTH_MODE=oidc
+   OIDC_ISSUER=https://<your-tenant>.okta.com/oauth2/default
+   OIDC_AUDIENCE=<api-audience-from-okta>
+   ```
+3. On the UI set:
+   ```
+   VITE_AUTH_MODE=oidc
+   VITE_OIDC_ISSUER=https://<your-tenant>.okta.com/oauth2/default
+   VITE_OIDC_CLIENT_ID=<spa-client-id-from-okta>
+   ```
+
+First Okta login for an unknown user JIT-creates a `common.subjects`
+row using the token's `preferred_username` / `email` / `sub`. Future
+logins for the same user reuse the row via `oidc_sub`.
 
 ## Prerequisites
 

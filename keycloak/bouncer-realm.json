@@ -1,0 +1,137 @@
+{
+  "realm": "bouncer",
+  "enabled": true,
+  "accessTokenLifespan": 300,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": false,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": false,
+  "clients": [
+    {
+      "clientId": "bouncer-ui",
+      "name": "Bouncer UI",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "protocol": "openid-connect",
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:5173/*"
+      },
+      "redirectUris": [
+        "http://localhost:5173/*"
+      ],
+      "webOrigins": [
+        "http://localhost:5173",
+        "+"
+      ],
+      "defaultClientScopes": [
+        "openid",
+        "profile",
+        "email"
+      ],
+      "protocolMappers": [
+        {
+          "name": "bouncer-ui audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "bouncer-ui",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "admin",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Bouncer",
+      "lastName": "Administrator",
+      "email": "admin@bouncer.demo",
+      "credentials": [{ "type": "password", "value": "password", "temporary": false }]
+    },
+    {
+      "username": "dev",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Bouncer",
+      "lastName": "Developer",
+      "email": "dev@bouncer.demo",
+      "credentials": [{ "type": "password", "value": "password", "temporary": false }]
+    },
+    {
+      "username": "owner",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Bouncer",
+      "lastName": "Owner",
+      "email": "owner@bouncer.demo",
+      "credentials": [{ "type": "password", "value": "password", "temporary": false }]
+    },
+    {
+      "username": "l6",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Level 6",
+      "lastName": "Manager",
+      "email": "l6@bouncer.demo",
+      "credentials": [{ "type": "password", "value": "password", "temporary": false }]
+    },
+    {
+      "username": "l5",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Level 5",
+      "lastName": "Manager",
+      "email": "l5@bouncer.demo",
+      "credentials": [{ "type": "password", "value": "password", "temporary": false }]
+    },
+    {
+      "username": "l4",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Level 4",
+      "lastName": "Manager",
+      "email": "l4@bouncer.demo",
+      "credentials": [{ "type": "password", "value": "password", "temporary": false }]
+    },
+    {
+      "username": "l3",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Level 3",
+      "lastName": "Manager",
+      "email": "l3@bouncer.demo",
+      "credentials": [{ "type": "password", "value": "password", "temporary": false }]
+    },
+    {
+      "username": "audit",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Bouncer",
+      "lastName": "Audit",
+      "email": "audit@bouncer.demo",
+      "credentials": [{ "type": "password", "value": "password", "temporary": false }]
+    },
+    {
+      "username": "sec",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Bouncer",
+      "lastName": "Security",
+      "email": "sec@bouncer.demo",
+      "credentials": [{ "type": "password", "value": "password", "temporary": false }]
+    }
+  ]
+}

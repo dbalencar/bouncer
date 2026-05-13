@@ -20,5 +20,17 @@ services:
       timeout: 5s
       retries: 5
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    container_name: bouncer-keycloak
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./keycloak/bouncer-realm.json:/opt/keycloak/data/import/bouncer-realm.json:ro
+
 volumes:
   postgres_data:
