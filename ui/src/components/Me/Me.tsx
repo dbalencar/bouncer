@@ -19,8 +19,7 @@ const Me: React.FC = () => {
   const [resourceGroups, setResourceGroups] = useState<Record<string, ResourceGroup[]>>({});
   const [roles, setRoles] = useState<Record<string, Role[]>>({});
   const [loading, setLoading] = useState(true);
-  const [initialTenantSet, setInitialTenantSet] = useState(false);
-  const { selectedTenant, setTenant } = useTenant();
+  const { selectedTenant, setTenant, clearTenant } = useTenant();
   const { selectedSubject } = useSubject();
   const navigate = useNavigate();
 
@@ -34,26 +33,19 @@ const Me: React.FC = () => {
   }, [selectedSubject]);
 
   useEffect(() => {
+    // Clear selected tenant for non-admins when navigating to /me
+    // This allows them to switch tenants from /requests
+    if (selectedTenant && selectedSubject && tenants.length > 0 && !isSubjectAdmin) {
+      clearTenant();
+    }
+  }, [selectedSubject, tenants, isSubjectAdmin, clearTenant]);
+
+  useEffect(() => {
     // Load resources, resource groups, and roles for all tenants
     if (allTenants.length > 0) {
       loadTenantData();
     }
   }, [allTenants]);
-
-  useEffect(() => {
-    // Redirect non-admin subjects to /requests when tenant is selected
-    // Only redirect after initial load to avoid redirecting on page load
-    if (selectedTenant && selectedSubject && tenants.length > 0 && !isSubjectAdmin && initialTenantSet) {
-      navigate('/requests');
-    }
-  }, [selectedTenant, selectedSubject, tenants, isSubjectAdmin, initialTenantSet, navigate]);
-
-  useEffect(() => {
-    // Mark that we've seen the initial tenant state
-    if (selectedTenant) {
-      setInitialTenantSet(true);
-    }
-  }, [selectedTenant]);
 
   const loadTenants = async () => {
     try {
