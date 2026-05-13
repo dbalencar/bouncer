@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Subject, Tenant, Policy, Permission, Role, PolicyEvaluationRequest, PolicyEvaluationResponse, ResourceGroup, Resource, Grant, GrantRequest } from '../types';
+import { Subject, Tenant, Policy, Permission, Role, PolicyEvaluationRequest, PolicyEvaluationResponse, ResourceGroup, Resource, Grant, GrantRequest, AuditLogPage, AuditLogQuery } from '../types';
 
 const API_BASE_URL = '/api';
 
@@ -8,6 +8,19 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+});
+
+let currentActorUid: string | null = null;
+
+export const setApiActor = (subjectUid: string | null): void => {
+  currentActorUid = subjectUid;
+};
+
+api.interceptors.request.use((config) => {
+  if (currentActorUid) {
+    config.headers.set('X-Actor-Uid', currentActorUid);
+  }
+  return config;
 });
 
 export const tenantApi = {
@@ -260,6 +273,13 @@ export const grantRequestApi = {
 
   delete: async (schemaName: string, uid: string): Promise<void> => {
     await api.delete(`/tenants/${schemaName}/grant-requests/${uid}`);
+  },
+};
+
+export const auditLogApi = {
+  getByTenant: async (tenantId: string, params: AuditLogQuery = {}): Promise<AuditLogPage> => {
+    const response = await api.get(`/tenants/${tenantId}/audit-logs`, { params });
+    return response.data;
   },
 };
 

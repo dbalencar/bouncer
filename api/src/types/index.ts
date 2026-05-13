@@ -174,3 +174,29 @@ export interface CreateGrantRequestRequest {
 export interface UpdateGrantRequestRequest {
   status?: GrantRequestStatus;
 }
+
+export interface AuditLog {
+  id: string;
+  actor_uid: string | null;
+  action: string;
+  entity_type: string;
+  entity_id: string | null;
+  details: Record<string, any> | null;
+  created_at: Date;
+}
+
+export interface CreateAuditLogInput {
+  actor_uid?: string | null;
+  action: string;
+  entity_type: string;
+  entity_id?: string | null;
+  details?: Record<string, any> | null;
+}
+
+export interface AuditLogQueryOptions {
+  limit?: number;
+  offset?: number;
+  actor_uid?: string;
+  entity_type?: string;
+  action?: string;
+}

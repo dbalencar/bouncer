@@ -12,6 +12,8 @@ import resourceGroupRoutes from './routes/resourceGroups';
 import resourceRoutes from './routes/resources';
 import grantRoutes from './routes/grants';
 import grantRequestRoutes from './routes/grantRequests';
+import auditLogRoutes from './routes/auditLogs';
+import { auditLogger } from './middleware/auditLogger';
 
 dotenv.config();
 
@@ -36,6 +38,9 @@ export const createApp = async (): Promise<Application> => {
     res.json({ status: 'healthy', timestamp: new Date().toISOString() });
   });
 
+  // Audit logger middleware (runs before routes; logs after successful writes)
+  app.use(auditLogger);
+
   // Routes
   app.use('/tenants', tenantRoutes);
   app.use('/subjects', subjectRoutes);
@@ -47,6 +52,7 @@ export const createApp = async (): Promise<Application> => {
   app.use('/', resourceRoutes);
   app.use('/', grantRoutes);
   app.use('/', grantRequestRoutes);
+  app.use('/', auditLogRoutes);
 
   // Error handling middleware
   app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

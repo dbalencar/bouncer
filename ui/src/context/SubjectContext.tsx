@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { Subject } from '../types';
+import { setApiActor } from '../services/api';
 
 interface SubjectContextType {
   selectedSubject: Subject | null;
@@ -14,10 +15,12 @@ export const SubjectProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const setSubject = (subject: Subject) => {
     setSelectedSubject(subject);
+    setApiActor(subject.uid);
   };
 
   const clearSubject = () => {
     setSelectedSubject(null);
+    setApiActor(null);
   };
 
   return (
