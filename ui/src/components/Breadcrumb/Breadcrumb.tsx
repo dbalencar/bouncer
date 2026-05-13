@@ -82,6 +82,9 @@ const Breadcrumb: React.FC = () => {
         label = 'Grants';
       } else if (segment === 'test') {
         label = 'Policy Test';
+      } else if (segment === 'home') {
+        // Skip 'home' segment to avoid duplication
+        return;
       } else if (segment.match(/^[0-9a-f-]{36}$/i)) {
         // This is a tenant ID - look up the tenant name
         const tenant = tenants.find(t => t.id === segment);
