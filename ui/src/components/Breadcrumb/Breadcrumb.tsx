@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { tenantApi } from '../../services/api';
 import { Tenant } from '../../types';
+import { useSubject } from '../../context/SubjectContext';
 import './Breadcrumb.css';
 
 interface BreadcrumbItem {
@@ -11,6 +12,7 @@ interface BreadcrumbItem {
 
 const Breadcrumb: React.FC = () => {
   const location = useLocation();
+  const { selectedSubject } = useSubject();
   const [tenants, setTenants] = useState<Tenant[]>([]);
 
   useEffect(() => {
@@ -26,11 +28,20 @@ const Breadcrumb: React.FC = () => {
     }
   };
 
+  const isTenantAdmin = !!selectedSubject &&
+    tenants.some(t => t.admin_uid === selectedSubject.uid);
+
   const generateBreadcrumbs = (): BreadcrumbItem[] => {
     const pathnames = location.pathname.split('/').filter((x) => x);
 
+    // Home path depends on authentication state and role
+    let homePath = '/';
+    if (selectedSubject) {
+      homePath = isTenantAdmin ? '/admin' : '/me';
+    }
+
     const breadcrumbs: BreadcrumbItem[] = [
-      { label: 'Home', path: '/' }
+      { label: 'Home', path: homePath }
     ];
 
     let currentPath = '';
