@@ -140,9 +140,9 @@ const Me: React.FC = () => {
 
   const handleManageTenant = (tenant: Tenant) => {
     setTenant(tenant);
-    // Non-admins go to /requests, admins go to policies
+    // Non-admins go to /requests, admins go to grants
     if (isSubjectAdmin) {
-      navigate(`/tenants/${tenant.id}/policies`);
+      navigate(`/tenants/${tenant.id}/grants`);
     } else {
       navigate('/requests');
     }

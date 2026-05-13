@@ -53,7 +53,7 @@ const Admin: React.FC = () => {
 
   const handleManageTenant = (tenant: Tenant) => {
     setTenant(tenant);
-    navigate(`/tenants/${tenant.id}/policies`);
+    navigate(`/tenants/${tenant.id}/grants`);
   };
 
   const handleApproveRequest = async (schemaName: string, requestUid: string) => {
