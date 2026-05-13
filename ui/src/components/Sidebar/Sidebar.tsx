@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTenant } from '../../context/TenantContext';
+import { useSubject } from '../../context/SubjectContext';
+import { tenantApi } from '../../services/api';
+import { Tenant } from '../../types';
 import './Sidebar.css';
 
 interface NavItem {
@@ -8,49 +11,76 @@ interface NavItem {
   path: string;
 }
 
+interface NavSection {
+  title?: string;
+  items: NavItem[];
+}
+
 const Sidebar: React.FC = () => {
   const location = useLocation();
   const { selectedTenant } = useTenant();
+  const { selectedSubject } = useSubject();
+  const [tenants, setTenants] = useState<Tenant[]>([]);
 
-  const getNavItems = (): NavItem[] => {
-    // Admin page specific navigation - show all management links
-    if (location.pathname === '/admin') {
-      return [
-        { label: 'Tenants', path: '/tenants' },
-        { label: 'Permissions', path: '/subjects' },
-        { label: 'Roles', path: '/tenants' },
-        { label: 'Resource Groups', path: '/tenants' },
-        { label: 'Resources', path: '/tenants' },
-        { label: 'Policies', path: '/tenants' },
-        { label: 'Policy Test', path: '/tenants' },
-      ];
+  useEffect(() => {
+    loadTenants();
+  }, []);
+
+  const loadTenants = async () => {
+    try {
+      const data = await tenantApi.getAll();
+      setTenants(data);
+    } catch (err) {
+      console.error('Failed to load tenants:', err);
+    }
+  };
+
+  const isTenantAdmin = !!selectedSubject &&
+    tenants.some(t => t.admin_uid === selectedSubject.uid);
+
+  const getNavSections = (): NavSection[] => {
+    const sections: NavSection[] = [];
+
+    // Logged out: just Home
+    if (!selectedSubject) {
+      sections.push({ items: [{ label: 'Home', path: '/' }] });
+      return sections;
     }
 
-    // General navigation
-    const navItems: NavItem[] = [
+    // Common items for any logged-in subject
+    const generalItems: NavItem[] = [
       { label: 'Home', path: '/' },
       { label: 'Me', path: '/me' },
       { label: 'Requests', path: '/requests' },
-      { label: 'Admin', path: '/admin' },
     ];
 
-    // Add tenant-specific navigation if a tenant is selected
-    if (selectedTenant) {
-      navItems.push(
-        { label: 'Policies', path: `/tenants/${selectedTenant.id}/policies` },
-        { label: 'Permissions', path: `/tenants/${selectedTenant.id}/permissions` },
-        { label: 'Roles', path: `/tenants/${selectedTenant.id}/roles` },
-        { label: 'Resource Groups', path: `/tenants/${selectedTenant.id}/resource-groups` },
-        { label: 'Resources', path: `/tenants/${selectedTenant.id}/resources` },
-        { label: 'Grants', path: `/tenants/${selectedTenant.id}/grants` },
-        { label: 'Test Policy', path: `/tenants/${selectedTenant.id}/test` },
-      );
+    // Admins also see the Admin dashboard
+    if (isTenantAdmin) {
+      generalItems.push({ label: 'Admin', path: '/admin' });
     }
 
-    return navItems;
+    sections.push({ items: generalItems });
+
+    // Tenant-scoped admin menu when admin has selected a tenant to manage
+    if (isTenantAdmin && selectedTenant) {
+      sections.push({
+        title: selectedTenant.name,
+        items: [
+          { label: 'Policies', path: `/tenants/${selectedTenant.id}/policies` },
+          { label: 'Permissions', path: `/tenants/${selectedTenant.id}/permissions` },
+          { label: 'Roles', path: `/tenants/${selectedTenant.id}/roles` },
+          { label: 'Resource Groups', path: `/tenants/${selectedTenant.id}/resource-groups` },
+          { label: 'Resources', path: `/tenants/${selectedTenant.id}/resources` },
+          { label: 'Grants', path: `/tenants/${selectedTenant.id}/grants` },
+          { label: 'Policy Test', path: `/tenants/${selectedTenant.id}/test` },
+        ],
+      });
+    }
+
+    return sections;
   };
 
-  const navItems = getNavItems();
+  const sections = getNavSections();
 
   return (
     <div className="sidebar">
@@ -59,18 +89,25 @@ const Sidebar: React.FC = () => {
           Bouncer
         </Link>
       </div>
-      
+
       <nav className="sidebar-nav">
-        {navItems.map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className={`sidebar-nav-item ${
-              location.pathname === item.path ? 'active' : ''
-            }`}
-          >
-            {item.label}
-          </Link>
+        {sections.map((section, idx) => (
+          <div key={idx} className="sidebar-section">
+            {section.title && (
+              <div className="sidebar-section-title">{section.title}</div>
+            )}
+            {section.items.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`sidebar-nav-item ${
+                  location.pathname === item.path ? 'active' : ''
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
         ))}
       </nav>
     </div>

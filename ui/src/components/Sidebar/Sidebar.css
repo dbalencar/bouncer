@@ -34,6 +34,22 @@
   overflow-y: auto;
 }
 
+.sidebar-section {
+  margin-bottom: 1rem;
+}
+
+.sidebar-section-title {
+  padding: 0.5rem 1.5rem;
+  color: #666;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-top: 1px solid #2a2a2a;
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+}
+
 .sidebar-nav-item {
   display: block;
   padding: 0.75rem 1.5rem;
