@@ -16,6 +16,7 @@ import AuditLogList from './components/AuditLogList/AuditLogList';
 import Me from './components/Me/Me';
 import Admin from './components/Admin/Admin';
 import Access from './components/Access/Access';
+import AccessManager from './components/AccessManager/AccessManager';
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
               <Route path="/subjects" element={<SubjectList />} />
               <Route path="/me" element={<Me />} />
               <Route path="/requests" element={<Access />} />
+              <Route path="/access" element={<AccessManager />} />
               <Route path="/admin" element={<Admin />} />
             </Routes>
           </Layout>

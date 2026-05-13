@@ -2,7 +2,7 @@ import { query } from '../config/database';
 import { Grant, CreateGrantRequest, UpdateGrantRequest } from '../types';
 import { getTenantById } from './tenantService';
 import { getSubjectByUid } from './subjectService';
-import { getRoleByUid } from './roleService';
+import { getRoleByUid, getRolePermissions } from './roleService';
 
 export const getGrantsByTenant = async (tenantId: string): Promise<Grant[]> => {
   const tenant = await getTenantById(tenantId);
@@ -191,4 +191,51 @@ export const deleteGrant = async (tenantId: string, uid: string): Promise<void> 
     `DELETE FROM ${tenant.schema_name}.grants WHERE uid = $1`,
     [uid]
   );
+};
+
+// Returns the deduplicated list of paths on which the subject has a role
+// containing a permission named "admin" (case-insensitive). This is the
+// path-admin counterpart to grantRequestService.hasAdminPermissionOnPath:
+// the same admin-detection rule, but listed up-front so the UI can show
+// the path-admin scope to the subject without checking path-by-path.
+export const getAdminPathsForSubject = async (
+  tenantId: string,
+  subjectUid: string
+): Promise<string[]> => {
+  const grants = await getGrantsBySubject(tenantId, subjectUid);
+
+  const adminPaths = new Set<string>();
+  for (const grant of grants) {
+    const permissions = await getRolePermissions(tenantId, grant.role_uid);
+    const hasAdmin = permissions.some(
+      (p) => p.name.toLowerCase() === 'admin'
+    );
+    if (hasAdmin) {
+      adminPaths.add(grant.path);
+    }
+  }
+
+  return Array.from(adminPaths).sort();
+};
+
+// True iff the actor has admin permission on the given path. Mirrors
+// grantRequestService.hasAdminPermissionOnPath's bidirectional prefix
+// match: a grant on a parent of the path counts, and a grant on a child
+// also counts (the latter would be unusual but matches the existing rule).
+export const subjectHasAdminOnPath = async (
+  tenantId: string,
+  subjectUid: string,
+  path: string
+): Promise<boolean> => {
+  const grants = await getGrantsBySubject(tenantId, subjectUid);
+  for (const grant of grants) {
+    if (!(path.startsWith(grant.path) || grant.path.startsWith(path))) {
+      continue;
+    }
+    const permissions = await getRolePermissions(tenantId, grant.role_uid);
+    if (permissions.some((p) => p.name.toLowerCase() === 'admin')) {
+      return true;
+    }
+  }
+  return false;
 };

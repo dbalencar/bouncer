@@ -73,8 +73,13 @@ const Sidebar: React.FC = () => {
           { label: 'Audit Log', path: `/tenants/${selectedTenant.id}/audit-log` }
         );
       } else {
-        // Requests only for non-admins
-        tenantItems.push({ label: 'Requests', path: '/requests' });
+        // Non-admin subjects: request access, and manage grants on paths
+        // where they have the admin permission (empty state on /access if
+        // they have none — cheap enough not to gate this entry on a fetch).
+        tenantItems.push(
+          { label: 'Requests', path: '/requests' },
+          { label: 'Access', path: '/access' }
+        );
       }
 
       sections.push({
