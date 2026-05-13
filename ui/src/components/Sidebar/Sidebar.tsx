@@ -67,12 +67,12 @@ const Sidebar: React.FC = () => {
       sections.push({
         title: selectedTenant.name,
         items: [
-          { label: 'Policies', path: `/tenants/${selectedTenant.id}/policies` },
           { label: 'Permissions', path: `/tenants/${selectedTenant.id}/permissions` },
           { label: 'Roles', path: `/tenants/${selectedTenant.id}/roles` },
           { label: 'Resource Groups', path: `/tenants/${selectedTenant.id}/resource-groups` },
           { label: 'Resources', path: `/tenants/${selectedTenant.id}/resources` },
           { label: 'Grants', path: `/tenants/${selectedTenant.id}/grants` },
+          { label: 'Policies', path: `/tenants/${selectedTenant.id}/policies` },
           { label: 'Policy Test', path: `/tenants/${selectedTenant.id}/test` },
         ],
       });
