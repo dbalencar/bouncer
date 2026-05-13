@@ -31,6 +31,26 @@ Both API and UI read the same setting; the UI also fetches
 `GET /auth/config` from the API at startup so the runtime mode is
 always the source of truth.
 
+### Switching modes (`.env` symlink)
+
+Each app ships two ready-to-use env templates and `.env` is a symlink
+that points at whichever one you want active. Switching is just
+re-pointing the symlink and restarting the relevant dev server.
+
+```bash
+# Demo / mock-subject mode
+cd api && ln -sf .env.demo .env && cd ../ui && ln -sf .env.demo .env
+
+# OIDC / Keycloak (or Okta) mode
+cd api && ln -sf .env.oidc .env && cd ../ui && ln -sf .env.oidc .env
+```
+
+`.env.demo` and `.env.oidc` are committed templates with sensible local
+defaults (Keycloak URLs already filled in for the dev IdP shipped via
+`docker-compose.yml`). `.env` itself is git-ignored, so each developer
+freely flips the symlink without affecting the repo. Both apps must
+agree — keep their symlinks pointed at the same variant.
+
 ### Mock mode (default)
 
 `AUTH_MODE=mock` on the API, `VITE_AUTH_MODE=mock` on the UI. The
