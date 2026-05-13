@@ -1,36 +1,35 @@
 .layout {
   min-height: 100vh;
   display: flex;
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 250px;
+  display: flex;
   flex-direction: column;
 }
 
-.header {
+.top-bar {
   background-color: #1a1a1a;
   border-bottom: 1px solid #333;
   padding: 1rem 2rem;
-}
-
-.header-content {
-  max-width: 1200px;
-  margin: 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
 }
 
-.logo {
+.top-bar-left {
+  flex: 1;
+}
+
+.page-title {
   font-size: 1.5rem;
   font-weight: bold;
   color: #fff;
 }
 
-.logo a {
-  color: #fff;
-  text-decoration: none;
-}
-
-.header-right {
+.top-bar-right {
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -74,10 +73,6 @@
 
 .logout-button:hover {
   background-color: #c82333;
-}
-
-.subject-dropdown {
-  position: relative;
 }
 
 .dropdown-menu {
