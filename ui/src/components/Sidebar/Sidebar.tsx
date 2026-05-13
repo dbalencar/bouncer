@@ -71,10 +71,10 @@ const Sidebar: React.FC = () => {
           { label: 'Policies', path: `/tenants/${selectedTenant.id}/policies` },
           { label: 'Policy Test', path: `/tenants/${selectedTenant.id}/test` }
         );
+      } else {
+        // Requests only for non-admins
+        tenantItems.push({ label: 'Requests', path: '/requests' });
       }
-
-      // Requests for both admins and non-admins
-      tenantItems.push({ label: 'Requests', path: '/requests' });
 
       sections.push({
         title: selectedTenant.name,
