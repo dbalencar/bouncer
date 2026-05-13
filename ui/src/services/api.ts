@@ -229,6 +229,13 @@ export const grantApi = {
   delete: async (tenantId: string, uid: string): Promise<void> => {
     await api.delete(`/tenants/${tenantId}/grants/${uid}`);
   },
+
+  getAdminPaths: async (tenantId: string, subjectUid: string): Promise<string[]> => {
+    const response = await api.get(`/tenants/${tenantId}/admin-paths`, {
+      params: { subject_uid: subjectUid },
+    });
+    return response.data.paths || [];
+  },
 };
 
 export const grantRequestApi = {
