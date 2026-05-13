@@ -23,6 +23,10 @@ const PolicyTest: React.FC = () => {
     context: {}
   });
 
+  const isSubjectAdmin = selectedSubject
+    ? tenants.some(t => t.admin_uid === selectedSubject.uid)
+    : false;
+
   useEffect(() => {
     loadTenants();
     loadSubjects();
@@ -43,10 +47,6 @@ const PolicyTest: React.FC = () => {
       console.error('Failed to load tenants:', err);
     }
   };
-
-  const isSubjectAdmin = selectedSubject
-    ? tenants.some(t => t.admin_uid === selectedSubject.uid)
-    : false;
 
   const loadSubjects = async () => {
     try {
