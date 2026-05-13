@@ -4,6 +4,7 @@ import { useTenant } from '../../context/TenantContext';
 import { useSubject } from '../../context/SubjectContext';
 import { tenantApi } from '../../services/api';
 import { Tenant } from '../../types';
+import bouncerLogo from '../../assets/bouncer.png';
 import './Sidebar.css';
 
 interface NavItem {
@@ -86,7 +87,7 @@ const Sidebar: React.FC = () => {
     <div className="sidebar">
       <div className="sidebar-header">
         <Link to="/" className="sidebar-logo">
-          Bouncer
+          <img src={bouncerLogo} alt="Bouncer" className="sidebar-logo-img" />
         </Link>
       </div>
 
