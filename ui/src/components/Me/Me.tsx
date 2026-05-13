@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTenant } from '../../context/TenantContext';
 import { useSubject } from '../../context/SubjectContext';
@@ -20,7 +20,6 @@ const Me: React.FC = () => {
   const [roles, setRoles] = useState<Record<string, Role[]>>({});
   const [loading, setLoading] = useState(true);
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
-  const tenantSetForNavigationRef = useRef(false);
   const { selectedTenant, setTenant, clearTenant } = useTenant();
   const { selectedSubject } = useSubject();
   const navigate = useNavigate();
@@ -35,20 +34,10 @@ const Me: React.FC = () => {
   }, [selectedSubject]);
 
   useEffect(() => {
-    // Clear selected tenant for non-admins when navigating to /me
-    // Only clear if tenant was NOT set for navigation (i.e., user explicitly navigated to /me)
-    // This allows users to switch tenants from /requests without losing their selection
-    if (selectedTenant && selectedSubject && tenants.length > 0 && !isSubjectAdmin && !tenantSetForNavigationRef.current) {
-      clearTenant();
-    }
-  }, [selectedSubject, tenants, isSubjectAdmin, clearTenant]);
-
-  useEffect(() => {
     // Navigate after tenant is set in context
     if (pendingNavigation && selectedTenant) {
       navigate(pendingNavigation);
       setPendingNavigation(null);
-      tenantSetForNavigationRef.current = false;
     }
   }, [selectedTenant, pendingNavigation, navigate]);
 
@@ -144,7 +133,6 @@ const Me: React.FC = () => {
 
   const handleManageTenant = (tenant: Tenant) => {
     setTenant(tenant);
-    tenantSetForNavigationRef.current = true;
     // Non-admins go to /requests, admins go to grants
     // Use pending navigation to ensure tenant is set in context before navigating
     if (isSubjectAdmin) {
@@ -222,6 +210,15 @@ const Me: React.FC = () => {
   return (
     <div className="me">
       <h2>Current Context</h2>
+
+      {selectedTenant && (
+        <div className="context-card">
+          <p><strong>Selected Tenant:</strong> {selectedTenant.name}</p>
+          <button onClick={() => clearTenant()} className="button button-secondary">
+            Clear Tenant
+          </button>
+        </div>
+      )}
 
       <div className="context-card">
         <h3>All Tenants</h3>
