@@ -1,6 +1,7 @@
 .layout {
   min-height: 100vh;
   display: flex;
+  background-color: var(--bg-page);
 }
 
 .main-content {
@@ -8,106 +9,127 @@
   margin-left: 250px;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .top-bar {
-  background-color: #1a1a1a;
-  border-bottom: 1px solid #333;
-  padding: 1rem 2rem;
+  background-color: var(--bg-surface-2);
+  border-bottom: 1px solid var(--border);
+  padding: var(--space-4) var(--space-8);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: var(--space-4);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(8px);
 }
 
-.top-bar-left {
-  flex: 1;
-}
+.top-bar-left { flex: 1; min-width: 0; }
 
 .page-title {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .top-bar-right {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  min-width: 200px;
-  justify-content: flex-end;
+  gap: var(--space-3);
 }
 
 .subject-indicator {
-  color: #28a745;
-  font-weight: bold;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  background-color: #0a3d1a;
-  border: 1px solid #28a745;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--success);
+  font-weight: 500;
+  font-size: 0.8125rem;
+  padding: var(--space-1) var(--space-3);
+  border-radius: 999px;
+  background-color: var(--success-soft);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.subject-indicator::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--success);
 }
 
 .login-button,
 .logout-button,
 .dropdown-button {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
+  background-color: var(--primary);
+  color: #fff;
+  border: 1px solid transparent;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius);
   cursor: pointer;
-  font-size: 0.875rem;
-  transition: background-color 0.2s;
-  display: inline-block;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
   white-space: nowrap;
 }
 
 .login-button:hover,
-.logout-button:hover,
 .dropdown-button:hover {
-  background-color: #0056b3;
+  background-color: var(--primary-hover);
 }
 
 .logout-button {
-  background-color: #dc3545;
+  background-color: transparent;
+  color: var(--text-muted);
+  border-color: var(--border);
 }
 
 .logout-button:hover {
-  background-color: #c82333;
+  background-color: var(--danger-soft);
+  color: var(--danger);
+  border-color: var(--danger);
 }
 
 .dropdown-menu {
   position: absolute;
   top: 100%;
   right: 0;
-  background-color: #2a2a2a;
-  border: 1px solid #444;
-  border-radius: 4px;
-  min-width: 150px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  min-width: 180px;
   z-index: 1000;
-  margin-top: 0.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  margin-top: var(--space-2);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
 }
 
 .dropdown-item {
   display: block;
   width: 100%;
-  padding: 0.5rem 1rem;
+  padding: var(--space-2) var(--space-4);
   background: none;
   border: none;
-  color: #fff;
+  color: var(--text);
   text-align: left;
   cursor: pointer;
-  transition: background-color 0.2s;
+  font-size: 0.875rem;
+  transition: background-color 0.15s ease;
 }
 
-.dropdown-item:hover {
-  background-color: #3a3a3a;
-}
+.dropdown-item:hover { background-color: var(--bg-hover); }
 
 .main {
   flex: 1;
-  max-width: 1200px;
+  max-width: 1280px;
   width: 100%;
   margin: 0 auto;
-  padding: 2rem;
+  padding: var(--space-8);
 }

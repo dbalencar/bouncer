@@ -5,22 +5,22 @@
 }
 
 .breadcrumb-item {
-  color: #007bff;
+  color: var(--primary);
   text-decoration: none;
   transition: color 0.2s;
 }
 
 .breadcrumb-item:hover {
-  color: #0056b3;
+  color: var(--primary-hover);
   text-decoration: underline;
 }
 
 .breadcrumb-active {
-  color: #888;
+  color: var(--text-muted);
   cursor: default;
 }
 
 .breadcrumb-separator {
   margin: 0 0.5rem;
-  color: #666;
+  color: var(--text-dim);
 }

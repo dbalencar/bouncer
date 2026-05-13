@@ -1,259 +1,132 @@
-.me h2 {
-  margin-bottom: 2rem;
-  color: #fff;
-}
-
-.context-card {
-  background-color: #2a2a2a;
-  border: 1px solid #333;
-  border-radius: 8px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-}
+.me .context-card { margin-bottom: var(--space-6); }
 
 .context-card h3 {
-  margin-bottom: 1rem;
-  color: #fff;
-  border-bottom: 1px solid #333;
-  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: var(--space-2);
+  margin-bottom: var(--space-4);
 }
 
 .context-info p {
-  color: #888;
-  margin-bottom: 0.5rem;
   font-size: 0.875rem;
+  margin-bottom: var(--space-1);
 }
 
-.context-info strong {
-  color: #fff;
-}
-
-.no-context {
-  color: #666;
-  font-style: italic;
-}
-
-.tenant-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
-}
-
-.tenant-card {
-  background-color: #1a1a1a;
-  border: 1px solid #333;
-  border-radius: 8px;
-  padding: 1.5rem;
-  transition: border-color 0.2s;
-}
-
-.tenant-card:hover {
-  border-color: #0066cc;
-}
-
-.tenant-card h3 {
-  margin-bottom: 0.75rem;
-  color: #fff;
-}
+/* Tenant cards on /me */
+.tenant-card { display: flex; flex-direction: column; }
 
 .tenant-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.75rem;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
 }
 
-.tenant-header h3 {
-  margin: 0;
-  color: #fff;
-}
+.tenant-header h3 { margin: 0; }
 
 .access-badge {
-  background-color: #28a745;
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
+  background-color: var(--success-soft);
+  color: var(--success);
+  padding: 0.125rem var(--space-2);
+  border-radius: 999px;
+  font-size: 0.6875rem;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
-.tenant-card.has-access {
-  border-color: #28a745;
-}
+.tenant-card.has-access  { border-color: rgba(16, 185, 129, 0.4); }
+.tenant-card.has-access:hover { border-color: var(--success); }
 
-.tenant-card.has-access:hover {
-  border-color: #218838;
-}
-
-.tenant-card.no-access {
-  border-color: #666;
-  opacity: 0.8;
-}
-
-.tenant-card.no-access:hover {
-  border-color: #888;
-  opacity: 1;
-}
+.tenant-card.no-access { opacity: 0.75; }
+.tenant-card.no-access:hover { opacity: 1; }
 
 .no-access-text {
-  color: #dc3545;
+  color: var(--danger);
   font-style: italic;
+  font-size: 0.8125rem;
 }
 
 .tenant-card p {
-  color: #888;
-  margin-bottom: 0.5rem;
   font-size: 0.875rem;
+  margin-bottom: var(--space-1);
 }
 
-.tenant-card strong {
-  color: #fff;
+.tenant-card-actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
 }
 
-.button {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.2s;
-  margin-top: 1rem;
-  width: 100%;
-}
+.tenant-card-actions .button { flex: 1; }
 
-.button-primary {
-  background-color: #0066cc;
-  color: white;
-}
-
-.button-primary:hover {
-  background-color: #0052a3;
-}
-
-.button-secondary {
-  background-color: #6c757d;
-  color: white;
-  margin-top: 0.5rem;
-}
-
-.button-secondary:hover {
-  background-color: #5a6268;
-}
-
-.button-small {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.75rem;
-  margin-top: 0;
-}
-
-.button-danger {
-  background-color: #dc3545;
-  color: white;
-}
-
-.button-danger:hover {
-  background-color: #c82333;
-}
-
-.loading {
-  text-align: center;
-  padding: 2rem;
-  color: #888;
-}
-
+/* Grants list inside tenant card */
 .grants-list {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #333;
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
 }
 
 .grant-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem;
-  background-color: #1a1a1a;
-  border: 1px solid #333;
-  border-radius: 4px;
-  margin-bottom: 0.5rem;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--bg-surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: var(--space-2);
 }
 
-.grant-item:last-child {
-  margin-bottom: 0;
-}
+.grant-item:last-child { margin-bottom: 0; }
 
 .grant-info {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
   flex: 1;
+  min-width: 0;
 }
 
 .grant-resource {
-  color: #007bff;
+  color: var(--primary);
   font-weight: 500;
   font-size: 0.875rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .grant-role {
-  color: #888;
-  font-size: 0.875rem;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
 }
 
 .resource-type-badge {
-  font-size: 0.65rem;
-  padding: 0.2rem 0.4rem;
-  border-radius: 10px;
+  font-size: 0.625rem;
+  padding: 0.125rem var(--space-2);
+  border-radius: 999px;
   text-transform: uppercase;
   font-weight: 600;
+  letter-spacing: 0.04em;
 }
 
 .resource-type-badge.resource {
-  background-color: #28a745;
-  color: white;
+  background-color: var(--success-soft);
+  color: var(--success);
 }
 
 .resource-type-badge.group {
-  background-color: #ffc107;
-  color: #333;
-}
-
-.grant-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1rem;
-}
-
-.grant-card {
-  background-color: #1a1a1a;
-  border: 1px solid #333;
-  border-radius: 8px;
-  padding: 1rem;
-  transition: border-color 0.2s;
-}
-
-.grant-card:hover {
-  border-color: #0066cc;
-}
-
-.grant-card p {
-  color: #888;
-  margin-bottom: 0.5rem;
-  font-size: 0.875rem;
-}
-
-.grant-card strong {
-  color: #fff;
+  background-color: var(--warning-soft);
+  color: var(--warning);
 }
 
 .form-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-4);
 }
 
-.form-header h3 {
-  margin: 0;
-  color: #fff;
-}
+.form-header h3 { margin: 0; }

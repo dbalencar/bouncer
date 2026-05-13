@@ -1,11 +1,71 @@
+/* ----------------------------------------------------------------
+   Design tokens
+---------------------------------------------------------------- */
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* Surfaces (dark theme) */
+  --bg-page:        #18181b;
+  --bg-surface:     #27272a;
+  --bg-surface-2:   #1f1f23;
+  --bg-input:       #1f1f23;
+  --bg-hover:       #2f2f33;
+
+  /* Borders */
+  --border:         #3f3f46;
+  --border-strong:  #52525b;
+  --border-focus:   #3b82f6;
+
+  /* Text */
+  --text:           #fafafa;
+  --text-muted:     #a1a1aa;
+  --text-dim:       #71717a;
+  --text-inverse:   #18181b;
+
+  /* Brand & status */
+  --primary:        #3b82f6;
+  --primary-hover:  #2563eb;
+  --primary-soft:   rgba(59, 130, 246, 0.15);
+
+  --success:        #10b981;
+  --success-hover:  #059669;
+  --success-soft:   rgba(16, 185, 129, 0.15);
+
+  --danger:         #ef4444;
+  --danger-hover:   #dc2626;
+  --danger-soft:    rgba(239, 68, 68, 0.15);
+
+  --warning:        #f59e0b;
+  --warning-hover:  #d97706;
+  --warning-soft:   rgba(245, 158, 11, 0.15);
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius:    6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow:    0 4px 6px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.45);
+
+  /* Typography */
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont,
+               'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color-scheme: dark;
+  color: var(--text);
+  background-color: var(--bg-page);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -23,8 +83,261 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background-color: var(--bg-page);
+  color: var(--text);
 }
 
 #root {
   min-height: 100vh;
 }
+
+/* ----------------------------------------------------------------
+   Typography
+---------------------------------------------------------------- */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+h1 { font-size: 1.875rem; }
+h2 { font-size: 1.5rem;   margin-bottom: var(--space-6); }
+h3 { font-size: 1.125rem; margin-bottom: var(--space-3); }
+h4 { font-size: 1rem;     margin-bottom: var(--space-2); }
+
+p  { color: var(--text-muted); }
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
+a:hover { color: var(--primary-hover); }
+
+strong { color: var(--text); font-weight: 600; }
+
+/* ----------------------------------------------------------------
+   Buttons
+---------------------------------------------------------------- */
+.button,
+button.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25;
+  background-color: var(--bg-surface);
+  color: var(--text);
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+              color 0.15s ease, transform 0.05s ease;
+  white-space: nowrap;
+}
+
+.button:hover  { background-color: var(--bg-hover); }
+.button:active { transform: translateY(1px); }
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button-primary  { background-color: var(--primary); color: #fff; }
+.button-primary:hover  { background-color: var(--primary-hover); }
+
+.button-success  { background-color: var(--success); color: #fff; }
+.button-success:hover  { background-color: var(--success-hover); }
+
+.button-danger   { background-color: var(--danger); color: #fff; }
+.button-danger:hover   { background-color: var(--danger-hover); }
+
+.button-warning  { background-color: var(--warning); color: var(--text-inverse); }
+.button-warning:hover  { background-color: var(--warning-hover); }
+
+.button-secondary { background-color: var(--bg-surface); color: var(--text); border-color: var(--border); }
+.button-secondary:hover { background-color: var(--bg-hover); border-color: var(--border-strong); }
+
+.button-ghost { background: transparent; color: var(--text-muted); }
+.button-ghost:hover { background-color: var(--bg-hover); color: var(--text); }
+
+.button-small  { padding: var(--space-1) var(--space-3); font-size: 0.75rem; }
+.button-large  { padding: var(--space-3) var(--space-6); font-size: 1rem; }
+
+/* ----------------------------------------------------------------
+   Forms
+---------------------------------------------------------------- */
+.input,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+select,
+textarea {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background-color: var(--bg-input);
+  color: var(--text);
+  font-size: 0.875rem;
+  font-family: inherit;
+  line-height: 1.5;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.input:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+.input::placeholder,
+input::placeholder,
+textarea::placeholder { color: var(--text-dim); }
+
+label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-bottom: var(--space-1);
+}
+
+.form-group { margin-bottom: var(--space-4); }
+
+.form-row {
+  display: flex;
+  gap: var(--space-3);
+  align-items: stretch;
+  margin-bottom: var(--space-4);
+}
+
+/* ----------------------------------------------------------------
+   Cards / surfaces
+---------------------------------------------------------------- */
+.card,
+.tenant-card,
+.context-card,
+.admin-info,
+.grant-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  transition: border-color 0.15s ease;
+}
+
+.card:hover,
+.tenant-card:hover { border-color: var(--border-strong); }
+
+/* ----------------------------------------------------------------
+   Grids
+---------------------------------------------------------------- */
+.grid,
+.tenant-grid,
+.grant-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-4);
+}
+
+/* ----------------------------------------------------------------
+   Tables
+---------------------------------------------------------------- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--bg-surface);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+th, td {
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.875rem;
+}
+
+th {
+  background-color: var(--bg-surface-2);
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background-color: var(--bg-hover); }
+
+/* ----------------------------------------------------------------
+   Badges
+---------------------------------------------------------------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem var(--space-2);
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.badge-primary { background: var(--primary-soft); color: var(--primary); }
+.badge-success { background: var(--success-soft); color: var(--success); }
+.badge-danger  { background: var(--danger-soft);  color: var(--danger); }
+.badge-warning { background: var(--warning-soft); color: var(--warning); }
+.badge-neutral { background: var(--bg-hover);     color: var(--text-muted); }
+
+/* ----------------------------------------------------------------
+   Feedback states
+---------------------------------------------------------------- */
+.loading {
+  text-align: center;
+  padding: var(--space-8);
+  color: var(--text-muted);
+}
+
+.error {
+  background-color: var(--danger-soft);
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius);
+  margin-bottom: var(--space-4);
+  font-size: 0.875rem;
+}
+
+.empty-state,
+.no-context,
+.no-tenants {
+  color: var(--text-dim);
+  font-style: italic;
+  text-align: center;
+  padding: var(--space-8);
+  background-color: var(--bg-surface);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-lg);
+}
+
+/* ----------------------------------------------------------------
+   Section header
+---------------------------------------------------------------- */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+  gap: var(--space-4);
+}
+
+.section-header h3 { margin: 0; }

@@ -2,20 +2,22 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 60vh;
+  min-height: calc(100vh - 200px);
+  padding: var(--space-8);
 }
 
 .home-content {
   text-align: center;
-  color: #fff;
+  max-width: 560px;
 }
 
 .home-content h1 {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
+  font-size: 2.25rem;
+  margin-bottom: var(--space-4);
 }
 
 .home-content p {
-  font-size: 1.25rem;
-  color: #888;
+  font-size: 1.0625rem;
+  color: var(--text-muted);
+  line-height: 1.6;
 }

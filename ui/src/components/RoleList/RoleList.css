@@ -1,191 +1,108 @@
-.role-list h2 {
-  margin-bottom: 1.5rem;
-  color: #fff;
-}
-
 .role-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-.loading {
-  text-align: center;
-  padding: 2rem;
-  color: #888;
-}
-
-.error {
-  background-color: #dc3545;
-  color: white;
-  padding: 0.75rem;
-  border-radius: 4px;
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-6);
 }
 
 .role-form {
-  background-color: #2a2a2a;
-  border: 1px solid #333;
-  border-radius: 8px;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  margin-bottom: var(--space-8);
 }
 
 .role-form h3 {
-  margin-bottom: 1rem;
-  color: #fff;
-}
-
-.form-group {
-  margin-bottom: 1rem;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #fff;
-}
-
-.input {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #333;
-  border-radius: 4px;
-  background-color: #1a1a1a;
-  color: #fff;
-  font-size: 1rem;
-}
-
-.input:focus {
-  outline: none;
-  border-color: #0066cc;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: var(--space-2);
+  margin-bottom: var(--space-4);
 }
 
 .permissions-selector {
-  border: 1px solid #333;
-  border-radius: 4px;
-  padding: 1rem;
-  background-color: #1a1a1a;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+  background-color: var(--bg-surface-2);
 }
 
 .permission-checkbox {
   display: flex;
   align-items: center;
-  padding: 0.5rem;
-  margin-bottom: 0.5rem;
-  border-radius: 4px;
-  background-color: #2a2a2a;
+  padding: var(--space-2);
+  margin-bottom: var(--space-2);
+  border-radius: var(--radius);
+  background-color: var(--bg-surface);
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.15s ease;
 }
 
 .permission-checkbox:hover {
-  background-color: #333;
+  background-color: var(--bg-hover);
 }
 
 .permission-checkbox input[type="checkbox"] {
-  margin-right: 0.75rem;
+  margin-right: var(--space-3);
   cursor: pointer;
+  width: auto;
 }
 
 .permission-info {
   flex: 1;
-  margin-left: 0.5rem;
+  margin-left: var(--space-2);
 }
 
 .permission-info strong {
-  color: #fff;
   display: block;
 }
 
 .permission-path {
-  color: #888;
+  color: var(--text-muted);
   font-size: 0.875rem;
-  font-family: 'Courier New', monospace;
+  font-family: 'JetBrains Mono', 'SF Mono', 'Courier New', monospace;
 }
 
 .permissions-count {
-  margin-top: 0.5rem;
-  color: #888;
+  margin-top: var(--space-2);
+  color: var(--text-muted);
   font-size: 0.875rem;
 }
 
 .form-actions {
   display: flex;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.button {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.2s;
-}
-
-.button-primary {
-  background-color: #0066cc;
-  color: white;
-}
-
-.button-primary:hover {
-  background-color: #0052a3;
-}
-
-.button-danger {
-  background-color: #dc3545;
-  color: white;
-}
-
-.button-danger:hover {
-  background-color: #c82333;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
 }
 
 .roles-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
+  gap: var(--space-6);
 }
 
 .role-card {
-  background-color: #2a2a2a;
-  border: 1px solid #333;
-  border-radius: 8px;
-  padding: 1.5rem;
-  transition: border-color 0.2s;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  transition: border-color 0.15s ease;
 }
 
-.role-card:hover {
-  border-color: #0066cc;
-}
+.role-card:hover { border-color: var(--primary); }
 
 .role-card h3 {
-  margin-bottom: 0.5rem;
-  color: #fff;
+  margin-bottom: var(--space-2);
 }
 
 .role-meta {
-  color: #888;
-  margin-bottom: 1rem;
+  color: var(--text-muted);
+  margin-bottom: var(--space-4);
   font-size: 0.875rem;
 }
 
 .role-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
-.role-actions .button {
-  flex: 1;
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-}
-
-.empty-state {
-  text-align: center;
-  color: #888;
-  padding: 2rem;
-}
+.role-actions .button { flex: 1; }

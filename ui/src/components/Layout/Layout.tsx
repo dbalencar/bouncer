@@ -11,7 +11,7 @@ import './Layout.css';
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { selectedTenant, clearTenant } = useTenant();
+  const { clearTenant } = useTenant();
   const { selectedSubject, setSubject, clearSubject } = useSubject();
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [tenants, setTenants] = useState<Tenant[]>([]);

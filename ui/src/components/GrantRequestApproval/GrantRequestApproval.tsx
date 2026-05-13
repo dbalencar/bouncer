@@ -57,16 +57,16 @@ const GrantRequestApproval: React.FC<GrantRequestApprovalProps> = ({ tenantId, s
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusClass = (status: string) => {
     switch (status) {
       case 'pending':
-        return '#ffc107';
+        return 'badge badge-warning';
       case 'approved':
-        return '#28a745';
+        return 'badge badge-success';
       case 'rejected':
-        return '#dc3545';
+        return 'badge badge-danger';
       default:
-        return '#6c757d';
+        return 'badge badge-neutral';
     }
   };
 
@@ -89,10 +89,7 @@ const GrantRequestApproval: React.FC<GrantRequestApprovalProps> = ({ tenantId, s
             <div key={request.uid} className="request-card">
               <div className="request-header">
                 <span className="request-path">{request.path}</span>
-                <span
-                  className="request-status"
-                  style={{ backgroundColor: getStatusColor(request.status) }}
-                >
+                <span className={getStatusClass(request.status)}>
                   {request.status}
                 </span>
               </div>

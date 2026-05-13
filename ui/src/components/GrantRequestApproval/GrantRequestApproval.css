@@ -1,106 +1,63 @@
 .grant-request-approval {
-  margin-top: 2rem;
-}
-
-.grant-request-approval h3 {
-  color: #fff;
-  margin-bottom: 1rem;
-}
-
-.grant-request-approval .error {
-  background-color: #dc3545;
-  color: white;
-  padding: 0.75rem;
-  border-radius: 4px;
-  margin-bottom: 1rem;
-}
-
-.grant-request-approval .no-requests {
-  color: #888;
-  font-style: italic;
+  margin-top: var(--space-8);
 }
 
 .grant-request-approval .request-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 .grant-request-approval .request-card {
-  background-color: #2a2a2a;
-  border: 1px solid #444;
-  border-radius: 8px;
-  padding: 1rem;
-  transition: border-color 0.2s;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  transition: border-color 0.15s ease;
 }
 
 .grant-request-approval .request-card:hover {
-  border-color: #007bff;
+  border-color: var(--primary);
 }
 
 .grant-request-approval .request-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--space-3);
 }
 
 .grant-request-approval .request-path {
-  color: #007bff;
+  color: var(--primary);
   font-weight: 500;
-  font-family: monospace;
-  font-size: 0.9rem;
+  font-family: 'JetBrains Mono', 'SF Mono', 'Courier New', monospace;
+  font-size: 0.875rem;
   word-break: break-all;
 }
 
 .grant-request-approval .request-status {
   color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
+  padding: var(--space-1) var(--space-3);
+  border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 500;
   text-transform: uppercase;
 }
 
 .grant-request-approval .request-details {
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-4);
 }
 
 .grant-request-approval .request-details p {
-  color: #aaa;
   font-size: 0.875rem;
-  margin: 0.25rem 0;
-}
-
-.grant-request-approval .request-details strong {
-  color: #fff;
+  margin: var(--space-1) 0;
 }
 
 .grant-request-approval .request-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
-.grant-request-approval .button {
+.grant-request-approval .request-actions .button {
   flex: 1;
-  padding: 0.5rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.875rem;
-  transition: opacity 0.2s;
-}
-
-.grant-request-approval .button:hover {
-  opacity: 0.9;
-}
-
-.grant-request-approval .button-success {
-  background-color: #28a745;
-  color: white;
-}
-
-.grant-request-approval .button-danger {
-  background-color: #dc3545;
-  color: white;
 }

@@ -203,16 +203,16 @@ const GrantRequestList: React.FC<GrantRequestListProps> = ({ schemaName, tenantI
     return canApproveRequestHelper(request, subjectGrants, roles);
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusClass = (status: string) => {
     switch (status) {
       case 'pending':
-        return '#ffc107';
+        return 'badge badge-warning';
       case 'approved':
-        return '#28a745';
+        return 'badge badge-success';
       case 'rejected':
-        return '#dc3545';
+        return 'badge badge-danger';
       default:
-        return '#6c757d';
+        return 'badge badge-neutral';
     }
   };
 
@@ -236,10 +236,7 @@ const GrantRequestList: React.FC<GrantRequestListProps> = ({ schemaName, tenantI
                     {request.resourceType}
                   </span>
                 )}
-                <span 
-                  className="request-status" 
-                  style={{ backgroundColor: getStatusColor(request.status) }}
-                >
+                <span className={getStatusClass(request.status)}>
                   {request.status}
                 </span>
               </div>
