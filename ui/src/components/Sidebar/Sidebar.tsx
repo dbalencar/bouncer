@@ -53,8 +53,9 @@ const Sidebar: React.FC = () => {
   const getNavSections = (): NavSection[] => {
     const sections: NavSection[] = [];
 
+    // Logged out: the page IS the home page and the Bouncer logo at
+    // the top of the sidebar already links there — no nav items.
     if (!selectedSubject) {
-      sections.push({ items: [{ label: 'Home', path: '/' }] });
       return sections;
     }
 
