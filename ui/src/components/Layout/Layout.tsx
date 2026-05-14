@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSubject } from '../../context/SubjectContext';
+import { useTenant } from '../../context/TenantContext';
 import { useAuth } from '../../context/AuthContext';
 import { subjectApi } from '../../services/api';
 import { Subject } from '../../types';
 import Sidebar from '../Sidebar/Sidebar';
 import TenantPicker from '../Sidebar/TenantPicker';
+import bouncerLogo from '../../assets/bouncer.png';
 import './Layout.css';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
   const { selectedSubject } = useSubject();
+  const { selectedTenant } = useTenant();
   const { mode, ready, login, logout } = useAuth();
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [isLoadingSubjects, setIsLoadingSubjects] = useState(false);
@@ -48,12 +51,20 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     await logout();
   };
 
+  // Sidebar exists only when there's something for it to host: a
+  // logged-in subject AND a selected tenant. In any other state the
+  // sidebar would be empty wallpaper.
+  const showSidebar = !!selectedSubject && !!selectedTenant;
+
   return (
     <div className="layout">
-      <Sidebar />
-      <div className="main-content">
+      {showSidebar && <Sidebar />}
+      <div className={`main-content ${showSidebar ? 'with-sidebar' : ''}`}>
         <header className="top-bar">
           <div className="top-bar-left">
+            <Link to="/" className="top-bar-logo">
+              <img src={bouncerLogo} alt="Bouncer" className="top-bar-logo-img" />
+            </Link>
             {selectedSubject && <TenantPicker />}
           </div>
           <div className="top-bar-right">

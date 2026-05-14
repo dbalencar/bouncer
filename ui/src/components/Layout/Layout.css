@@ -6,10 +6,13 @@
 
 .main-content {
   flex: 1;
-  margin-left: 250px;
   display: flex;
   flex-direction: column;
   min-width: 0;
+}
+
+.main-content.with-sidebar {
+  margin-left: 250px;
 }
 
 .top-bar {
@@ -31,6 +34,22 @@
   min-width: 0;
   display: flex;
   align-items: center;
+  gap: var(--space-4);
+}
+
+.top-bar-logo {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  line-height: 0;
+  flex-shrink: 0;
+}
+
+.top-bar-logo-img {
+  display: block;
+  height: 36px;
+  width: auto;
+  object-fit: contain;
 }
 
 .top-bar-right {

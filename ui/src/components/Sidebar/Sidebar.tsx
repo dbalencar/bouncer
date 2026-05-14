@@ -3,7 +3,6 @@ import { Link, useLocation } from 'react-router-dom';
 import { useTenant } from '../../context/TenantContext';
 import { useSubject } from '../../context/SubjectContext';
 import { grantApi } from '../../services/api';
-import bouncerLogo from '../../assets/bouncer.png';
 import './Sidebar.css';
 
 interface NavItem {
@@ -89,16 +88,8 @@ const Sidebar: React.FC = () => {
 
   const sections = getNavSections();
 
-  const logoPath = selectedSubject ? '/me' : '/';
-
   return (
     <div className="sidebar">
-      <div className="sidebar-header">
-        <Link to={logoPath} className="sidebar-logo">
-          <img src={bouncerLogo} alt="Bouncer" className="sidebar-logo-img" />
-        </Link>
-      </div>
-
       <nav className="sidebar-nav">
         {sections.map((section, idx) => (
           <div key={idx} className="sidebar-section">
