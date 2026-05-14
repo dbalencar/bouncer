@@ -36,41 +36,30 @@ const Sidebar: React.FC = () => {
       return sections;
     }
 
-    // Tenant-scoped menu when a tenant is selected via the picker
+    // Tenant-scoped menu when a tenant is selected via the picker.
+    // Tenant-admins see the full admin menu; everyone else gets a
+    // single "My Access" entry that aggregates grants / requests /
+    // path-admin into one page (see Me.tsx).
     if (selectedTenant) {
-      const tenantItems: NavItem[] = [];
-
-      if (isTenantAdmin) {
-        tenantItems.push(
-          { label: 'Permissions', path: `/tenants/${selectedTenant.id}/permissions` },
-          { label: 'Roles', path: `/tenants/${selectedTenant.id}/roles` },
-          { label: 'Resource Groups', path: `/tenants/${selectedTenant.id}/resource-groups` },
-          { label: 'Resources', path: `/tenants/${selectedTenant.id}/resources` },
-          { label: 'Grants', path: `/tenants/${selectedTenant.id}/grants` },
-          { label: 'Grant Requests', path: `/tenants/${selectedTenant.id}/grant-requests` },
-          { label: 'Policies', path: `/tenants/${selectedTenant.id}/policies` },
-          { label: 'Policy Test', path: `/tenants/${selectedTenant.id}/test` },
-          { label: 'Audit Log', path: `/tenants/${selectedTenant.id}/audit-log` }
-        );
-      } else {
-        tenantItems.push(
-          { label: 'Requests', path: '/requests' },
-          { label: 'Access', path: '/access' }
-        );
-      }
+      const tenantItems: NavItem[] = isTenantAdmin
+        ? [
+            { label: 'Permissions', path: `/tenants/${selectedTenant.id}/permissions` },
+            { label: 'Roles', path: `/tenants/${selectedTenant.id}/roles` },
+            { label: 'Resource Groups', path: `/tenants/${selectedTenant.id}/resource-groups` },
+            { label: 'Resources', path: `/tenants/${selectedTenant.id}/resources` },
+            { label: 'Grants', path: `/tenants/${selectedTenant.id}/grants` },
+            { label: 'Grant Requests', path: `/tenants/${selectedTenant.id}/grant-requests` },
+            { label: 'Policies', path: `/tenants/${selectedTenant.id}/policies` },
+            { label: 'Policy Test', path: `/tenants/${selectedTenant.id}/test` },
+            { label: 'Audit Log', path: `/tenants/${selectedTenant.id}/audit-log` },
+          ]
+        : [{ label: 'My Access', path: '/me' }];
 
       sections.push({
         title: selectedTenant.name,
         items: tenantItems,
       });
     }
-
-    // Personal nav lives at the bottom; available to every logged-in
-    // subject regardless of tenant selection.
-    sections.push({
-      title: 'You',
-      items: [{ label: 'My Access', path: '/me' }],
-    });
 
     return sections;
   };

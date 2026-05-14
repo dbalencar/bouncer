@@ -16,8 +16,6 @@ import GrantList from './components/GrantList/GrantList';
 import GrantRequestApproval from './components/GrantRequestApproval/GrantRequestApproval';
 import AuditLogList from './components/AuditLogList/AuditLogList';
 import Me from './components/Me/Me';
-import Access from './components/Access/Access';
-import AccessManager from './components/AccessManager/AccessManager';
 
 function App() {
   return (
@@ -40,8 +38,6 @@ function App() {
                 <Route path="/tenants/:tenantId/test" element={<PolicyTest />} />
                 <Route path="/subjects" element={<SubjectList />} />
                 <Route path="/me" element={<Me />} />
-                <Route path="/requests" element={<Access />} />
-                <Route path="/access" element={<AccessManager />} />
               </Routes>
             </Layout>
           </AuthProvider>
