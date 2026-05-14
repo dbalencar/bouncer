@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { getUserManager } from '../../config/oidc';
 import {
   authMeApi,
-  tenantApi,
   setApiAuthMode,
   setApiAccessTokenProvider,
 } from '../../services/api';
@@ -56,10 +55,7 @@ const AuthCallback: React.FC = () => {
         const me = await authMeApi.get();
         if (cancelled) return;
         setSubject(me);
-        // Same landing logic as Layout.handleLogin uses today.
-        const tenants = await tenantApi.getAll();
-        const isAdmin = tenants.some((t) => t.admin_uid === me.uid);
-        navigate(isAdmin ? '/admin' : '/me', { replace: true });
+        navigate('/me', { replace: true });
       } catch (err: any) {
         if (cancelled) return;
         console.error('OIDC callback failed:', err);

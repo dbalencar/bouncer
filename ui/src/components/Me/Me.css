@@ -1,70 +1,34 @@
-.me .context-card { margin-bottom: var(--space-6); }
+.me h2 {
+  margin-bottom: var(--space-6);
+}
 
-.context-card h3 {
+.me-section {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  margin-bottom: var(--space-5);
+}
+
+.me-section-title {
   border-bottom: 1px solid var(--border);
   padding-bottom: var(--space-2);
   margin-bottom: var(--space-4);
+  font-size: 0.9375rem;
 }
 
-.context-info p {
+.no-access-text {
+  color: var(--text-muted);
+  font-style: italic;
   font-size: 0.875rem;
-  margin-bottom: var(--space-1);
-}
-
-/* Tenant cards on /me */
-.tenant-card { display: flex; flex-direction: column; }
-
-.tenant-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--space-3);
   margin-bottom: var(--space-3);
 }
 
-.tenant-header h3 { margin: 0; }
-
-.access-badge {
-  background-color: var(--success-soft);
-  color: var(--success);
-  padding: 0.125rem var(--space-2);
-  border-radius: 999px;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.tenant-card.has-access  { border-color: rgba(16, 185, 129, 0.4); }
-.tenant-card.has-access:hover { border-color: var(--success); }
-
-.tenant-card.no-access { opacity: 0.75; }
-.tenant-card.no-access:hover { opacity: 1; }
-
-.no-access-text {
-  color: var(--danger);
-  font-style: italic;
-  font-size: 0.8125rem;
-}
-
-.tenant-card p {
-  font-size: 0.875rem;
-  margin-bottom: var(--space-1);
-}
-
-.tenant-card-actions {
-  display: flex;
-  gap: var(--space-2);
-  margin-top: var(--space-4);
-}
-
-.tenant-card-actions .button { flex: 1; }
-
-/* Grants list inside tenant card */
+/* Grants list rendered in Section 1 */
 .grants-list {
-  margin-top: var(--space-4);
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
 .grant-item {
@@ -76,10 +40,7 @@
   background-color: var(--bg-surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  margin-bottom: var(--space-2);
 }
-
-.grant-item:last-child { margin-bottom: 0; }
 
 .grant-info {
   display: flex;
@@ -122,11 +83,25 @@
   color: var(--warning);
 }
 
-.form-header {
+/* Requests section: inline request form */
+.me-request-form {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+.me-request-form-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-3);
 }
 
-.form-header h3 { margin: 0; }
+.me-request-form-header h4 {
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+.no-context {
+  color: var(--text-muted);
+}

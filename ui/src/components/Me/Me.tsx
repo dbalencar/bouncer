@@ -1,293 +1,197 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 import { useTenant } from '../../context/TenantContext';
 import { useSubject } from '../../context/SubjectContext';
-import { tenantApi, grantApi, roleApi, resourceGroupApi, resourceApi as resourceServiceApi } from '../../services/api';
-import { Tenant, Grant, Role, ResourceGroup, Resource } from '../../types';
+import {
+  grantApi,
+  roleApi,
+  resourceApi as resourceServiceApi,
+  resourceGroupApi,
+} from '../../services/api';
+import { Grant, Resource, ResourceGroup, Role } from '../../types';
+import GrantRequestList from '../GrantRequestList/GrantRequestList';
+import GrantRequestForm from '../GrantRequestForm/GrantRequestForm';
 import './Me.css';
 
-interface TenantWithAccess extends Tenant {
-  hasAccess: boolean;
-  grants: Grant[];
-}
-
 const Me: React.FC = () => {
-  const [allTenants, setAllTenants] = useState<TenantWithAccess[]>([]);
-  const [tenants, setTenants] = useState<Tenant[]>([]);
-  const [expandedTenants, setExpandedTenants] = useState<Set<string>>(new Set());
-  const [resources, setResources] = useState<Record<string, Resource[]>>({});
-  const [resourceGroups, setResourceGroups] = useState<Record<string, ResourceGroup[]>>({});
-  const [roles, setRoles] = useState<Record<string, Role[]>>({});
-  const [loading, setLoading] = useState(true);
-  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
-  const { selectedTenant, setTenant, clearTenant } = useTenant();
+  const { selectedTenant } = useTenant();
   const { selectedSubject } = useSubject();
-  const navigate = useNavigate();
 
-  const isSubjectAdmin = selectedSubject
-    ? tenants.some(t => t.admin_uid === selectedSubject.uid)
-    : false;
+  const [myGrants, setMyGrants] = useState<Grant[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [resources, setResources] = useState<Resource[]>([]);
+  const [resourceGroups, setResourceGroups] = useState<ResourceGroup[]>([]);
 
-  useEffect(() => {
-    loadTenants();
-    loadAllTenants();
-  }, [selectedSubject]);
+  const [showRequestForm, setShowRequestForm] = useState(false);
+  const [requestListKey, setRequestListKey] = useState(0);
 
-  useEffect(() => {
-    // Navigate after tenant is set in context
-    if (pendingNavigation && selectedTenant) {
-      navigate(pendingNavigation);
-      setPendingNavigation(null);
-    }
-  }, [selectedTenant, pendingNavigation, navigate]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Load resources, resource groups, and roles for all tenants
-    if (allTenants.length > 0) {
-      loadTenantData();
-    }
-  }, [allTenants]);
-
-  const loadTenants = async () => {
-    try {
-      const data = await tenantApi.getAll();
-      setTenants(data);
-    } catch (err) {
-      console.error('Failed to load tenants:', err);
-    }
-  };
-
-  const loadTenantData = async () => {
-    const resourcesData: Record<string, Resource[]> = {};
-    const resourceGroupsData: Record<string, ResourceGroup[]> = {};
-    const rolesData: Record<string, Role[]> = {};
-
-    for (const tenant of allTenants) {
-      try {
-        const [resourcesRes, groupsRes, rolesRes] = await Promise.all([
-          resourceServiceApi.getByTenant(tenant.id),
-          resourceGroupApi.getByTenant(tenant.id),
-          roleApi.getByTenant(tenant.id),
-        ]);
-        resourcesData[tenant.id] = resourcesRes;
-        resourceGroupsData[tenant.id] = groupsRes;
-        rolesData[tenant.id] = rolesRes;
-      } catch (err) {
-        console.error(`Failed to load data for tenant ${tenant.id}:`, err);
-        resourcesData[tenant.id] = [];
-        resourceGroupsData[tenant.id] = [];
-        rolesData[tenant.id] = [];
-      }
-    }
-
-    setResources(resourcesData);
-    setResourceGroups(resourceGroupsData);
-    setRoles(rolesData);
-  };
-
-  const loadAllTenants = async () => {
-    if (!selectedSubject) {
-      setAllTenants([]);
-      setLoading(false);
-      return;
-    }
-
+  const loadAll = async () => {
+    if (!selectedTenant || !selectedSubject) return;
     try {
       setLoading(true);
-      const tenantsData = await tenantApi.getAll();
-      const tenantsWithAccessData: TenantWithAccess[] = [];
-
-      for (const tenant of tenantsData) {
-        try {
-          const grants = await grantApi.getBySubject(tenant.id, selectedSubject.uid);
-          tenantsWithAccessData.push({
-            ...tenant,
-            hasAccess: grants.length > 0,
-            grants,
-          });
-        } catch (err) {
-          // If grant check fails, assume no access
-          console.error(`Failed to check grants for tenant ${tenant.id}:`, err);
-          tenantsWithAccessData.push({
-            ...tenant,
-            hasAccess: false,
-            grants: [],
-          });
-        }
-      }
-
-      // Sort: tenants with access first, then others
-      tenantsWithAccessData.sort((a, b) => {
-        if (a.hasAccess && !b.hasAccess) return -1;
-        if (!a.hasAccess && b.hasAccess) return 1;
-        return a.name.localeCompare(b.name);
-      });
-
-      setAllTenants(tenantsWithAccessData);
+      const [grantsMine, rolesRes, resRes, groupRes] = await Promise.all([
+        grantApi.getBySubject(selectedTenant.id, selectedSubject.uid),
+        roleApi.getByTenant(selectedTenant.id),
+        resourceServiceApi.getByTenant(selectedTenant.id),
+        resourceGroupApi.getByTenant(selectedTenant.id),
+      ]);
+      setMyGrants(grantsMine);
+      setRoles(rolesRes);
+      setResources(resRes);
+      setResourceGroups(groupRes);
+      setError(null);
     } catch (err) {
-      console.error('Failed to load tenants:', err);
+      console.error('Failed to load My Access:', err);
+      setError('Failed to load. Try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleManageTenant = (tenant: Tenant) => {
-    setTenant(tenant);
-    // Non-admins go to /requests, admins go to grants
-    // Use pending navigation to ensure tenant is set in context before navigating
-    if (isSubjectAdmin) {
-      setPendingNavigation(`/tenants/${tenant.id}/grants`);
-    } else {
-      setPendingNavigation('/requests');
+  useEffect(() => {
+    if (!selectedSubject || !selectedTenant) {
+      setMyGrants([]);
+      setRoles([]);
+      setResources([]);
+      setResourceGroups([]);
+      return;
     }
+    loadAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSubject?.uid, selectedTenant?.id]);
+
+  const grantDetails = (grant: Grant) => {
+    const role = roles.find((r) => r.uid === grant.role_uid);
+    const resource = resources.find((r) => r.path === grant.path);
+    const group = resourceGroups.find((rg) => rg.path === grant.path);
+    let label = grant.path;
+    let kind: 'resource' | 'group' | undefined;
+    if (resource) {
+      label = resource.name;
+      kind = 'resource';
+    } else if (group) {
+      label = group.name;
+      kind = 'group';
+    }
+    return { roleName: role?.name || grant.role_uid, label, kind };
   };
 
-  const toggleExpand = (tenantId: string) => {
-    setExpandedTenants(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(tenantId)) {
-        newSet.delete(tenantId);
-      } else {
-        newSet.add(tenantId);
-      }
-      return newSet;
-    });
-  };
-
-  const handleRevokeGrant = async (tenantId: string, grantUid: string) => {
+  const handleRevokeMyGrant = async (grantUid: string) => {
+    if (!selectedTenant) return;
     if (!window.confirm('Are you sure you want to revoke this grant?')) return;
-
     try {
-      await grantApi.delete(tenantId, grantUid);
-      // Reload the tenant data
-      await loadAllTenants();
+      await grantApi.delete(selectedTenant.id, grantUid);
+      await loadAll();
     } catch (err) {
       console.error('Failed to revoke grant:', err);
-      alert('Failed to revoke grant. Please try again.');
+      setError('Failed to revoke grant.');
     }
   };
 
-  const getGrantDetails = (grant: Grant, tenantId: string) => {
-    const tenantResources = resources[tenantId] || [];
-    const tenantResourceGroups = resourceGroups[tenantId] || [];
-    const tenantRoles = roles[tenantId] || [];
-
-    const role = tenantRoles.find(r => r.uid === grant.role_uid);
-    const resource = tenantResources.find(r => r.path === grant.path);
-    const resourceGroup = tenantResourceGroups.find(rg => rg.path === grant.path);
-
-    let resourceName: string | undefined;
-    let resourceType: 'resource' | 'group' | undefined;
-
-    if (resource) {
-      resourceName = resource.name;
-      resourceType = 'resource';
-    } else if (resourceGroup) {
-      resourceName = resourceGroup.name;
-      resourceType = 'group';
-    }
-
-    return {
-      roleName: role?.name || grant.role_uid,
-      resourceName: resourceName || grant.path,
-      resourceType: resourceType,
-    };
+  const handleRequestCreated = () => {
+    setRequestListKey((n) => n + 1);
+    setShowRequestForm(false);
   };
 
   if (!selectedSubject) {
     return (
       <div className="me">
-        <h2>Current Context</h2>
-        <p className="no-context">No subject selected. Please select a subject to act as.</p>
+        <h2>My Access</h2>
+        <p className="no-context">No subject selected. Please log in.</p>
       </div>
     );
   }
 
-  if (loading) {
-    return <div className="loading">Loading...</div>;
+  if (!selectedTenant) {
+    return (
+      <div className="me">
+        <h2>My Access</h2>
+        <p className="no-context">
+          Pick a tenant from the sidebar dropdown to see your access.
+        </p>
+      </div>
+    );
   }
 
   return (
     <div className="me">
-      <h2>Current Context</h2>
+      <h2>My Access in {selectedTenant.name}</h2>
 
-      {selectedTenant && (
-        <div className="context-card">
-          <p><strong>Selected Tenant:</strong> {selectedTenant.name}</p>
-          <button onClick={() => clearTenant()} className="button button-secondary">
-            Clear Tenant
-          </button>
-        </div>
-      )}
+      {error && <div className="error">{error}</div>}
+      {loading && <p className="loading">Loading…</p>}
 
-      <div className="context-card">
-        <h3>All Tenants</h3>
-        {allTenants.length === 0 ? (
-          <p className="no-context">No tenants available.</p>
+      {/* Section 1: Grants */}
+      <section className="me-section">
+        <h3 className="me-section-title">Grants</h3>
+        {myGrants.length === 0 ? (
+          <p className="no-access-text">
+            You have no grants in this tenant. Use the Requests section below to
+            ask for access.
+          </p>
         ) : (
-          <div className="tenant-grid">
-            {allTenants.map((tenant) => (
-              <div key={tenant.id} className={`tenant-card ${tenant.hasAccess ? 'has-access' : 'no-access'}`}>
-                <div className="tenant-header">
-                  <h3>{tenant.name}</h3>
-                  {tenant.hasAccess && (
-                    <span className="access-badge">Has Access</span>
-                  )}
+          <div className="grants-list">
+            {myGrants.map((grant) => {
+              const d = grantDetails(grant);
+              return (
+                <div key={grant.uid} className="grant-item">
+                  <div className="grant-info">
+                    <span className="grant-resource">{d.label}</span>
+                    {d.kind && (
+                      <span className={`resource-type-badge ${d.kind}`}>{d.kind}</span>
+                    )}
+                    <span className="grant-role">{d.roleName}</span>
+                  </div>
+                  <button
+                    onClick={() => handleRevokeMyGrant(grant.uid)}
+                    className="button button-danger button-small"
+                  >
+                    Revoke
+                  </button>
                 </div>
-                <p><strong>Schema:</strong> {tenant.schema_name}</p>
-                <p><strong>ID:</strong> {tenant.id}</p>
-                {tenant.hasAccess ? (
-                  <>
-                    <p><strong>Grants:</strong> {tenant.grants.length}</p>
-                    {tenant.grants.length > 0 && (
-                      <button
-                        onClick={() => toggleExpand(tenant.id)}
-                        className="button button-secondary"
-                      >
-                        {expandedTenants.has(tenant.id) ? 'Hide Grants' : 'Show Grants'}
-                      </button>
-                    )}
-                    {expandedTenants.has(tenant.id) && tenant.grants.length > 0 && (
-                      <div className="grants-list">
-                        {tenant.grants.map((grant) => {
-                          const details = getGrantDetails(grant, tenant.id);
-                          return (
-                            <div key={grant.uid} className="grant-item">
-                              <div className="grant-info">
-                                <span className="grant-resource">{details.resourceName}</span>
-                                {details.resourceType && (
-                                  <span className={`resource-type-badge ${details.resourceType}`}>
-                                    {details.resourceType}
-                                  </span>
-                                )}
-                                <span className="grant-role">{details.roleName}</span>
-                              </div>
-                              <button
-                                onClick={() => handleRevokeGrant(tenant.id, grant.uid)}
-                                className="button button-danger button-small"
-                              >
-                                Revoke
-                              </button>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <p className="no-access-text">No access - request access to this tenant</p>
-                )}
-                <button
-                  onClick={() => handleManageTenant(tenant)}
-                  className="button button-primary"
-                >
-                  {tenant.hasAccess ? 'Access' : 'Request Access'}
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
-      </div>
+      </section>
+
+      {/* Section 2: Requests */}
+      <section className="me-section">
+        <h3 className="me-section-title">Requests</h3>
+
+        <GrantRequestList
+          key={requestListKey}
+          schemaName={selectedTenant.schema_name}
+          tenantId={selectedTenant.id}
+          subjectUid={selectedSubject.uid}
+          onRequestCreated={() => setRequestListKey((n) => n + 1)}
+        />
+
+        {showRequestForm ? (
+          <div className="me-request-form">
+            <div className="me-request-form-header">
+              <h4>Request new grant</h4>
+              <button className="button" onClick={() => setShowRequestForm(false)}>
+                Cancel
+              </button>
+            </div>
+            <GrantRequestForm
+              tenantId={selectedTenant.id}
+              schemaName={selectedTenant.schema_name}
+              subjectUid={selectedSubject.uid}
+              onRequestCreated={handleRequestCreated}
+            />
+          </div>
+        ) : (
+          <button
+            className="button button-primary"
+            onClick={() => setShowRequestForm(true)}
+          >
+            Request new grant
+          </button>
+        )}
+      </section>
     </div>
   );
 };

@@ -2,9 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTenant } from '../../context/TenantContext';
 import { useSubject } from '../../context/SubjectContext';
-import { tenantApi } from '../../services/api';
-import { Tenant } from '../../types';
-import bouncerLogo from '../../assets/bouncer.png';
+import { grantApi } from '../../services/api';
 import './Sidebar.css';
 
 interface NavItem {
@@ -21,66 +19,63 @@ const Sidebar: React.FC = () => {
   const location = useLocation();
   const { selectedTenant } = useTenant();
   const { selectedSubject } = useSubject();
-  const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [hasAdminPaths, setHasAdminPaths] = useState(false);
 
+  // Tenant-admin against the *currently selected* tenant.
+  const isTenantAdmin = !!selectedSubject && !!selectedTenant &&
+    selectedTenant.admin_uid === selectedSubject.uid;
+
+  // Fetch the subject's admin paths on this tenant to know whether to
+  // surface the "Resource Admin" entry. Tenant-admins don't need it
+  // (they have richer affordances on the Grants page).
   useEffect(() => {
-    loadTenants();
-  }, []);
-
-  const loadTenants = async () => {
-    try {
-      const data = await tenantApi.getAll();
-      setTenants(data);
-    } catch (err) {
-      console.error('Failed to load tenants:', err);
+    if (!selectedSubject || !selectedTenant || isTenantAdmin) {
+      setHasAdminPaths(false);
+      return;
     }
-  };
-
-  const isTenantAdmin = !!selectedSubject &&
-    tenants.some(t => t.admin_uid === selectedSubject.uid);
+    let cancelled = false;
+    grantApi
+      .getAdminPaths(selectedTenant.id, selectedSubject.uid)
+      .then((paths) => {
+        if (!cancelled) setHasAdminPaths(paths.length > 0);
+      })
+      .catch((err) => {
+        console.error('Failed to fetch admin paths for sidebar:', err);
+        if (!cancelled) setHasAdminPaths(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedSubject?.uid, selectedTenant?.id, isTenantAdmin]);
 
   const getNavSections = (): NavSection[] => {
     const sections: NavSection[] = [];
 
-    // Logged out: just Home
+    // Logged out: the page IS the home page and the Bouncer logo at
+    // the top of the sidebar already links there — no nav items.
     if (!selectedSubject) {
-      sections.push({ items: [{ label: 'Home', path: '/' }] });
       return sections;
     }
 
-    // Logged in: Tenants points to different pages based on role
-    const tenantsPath = isTenantAdmin ? '/admin' : '/me';
-    const generalItems: NavItem[] = [
-      { label: 'Tenants', path: tenantsPath },
-    ];
-
-    sections.push({ items: generalItems });
-
-    // Tenant-scoped menu when a tenant is selected
     if (selectedTenant) {
-      const tenantItems: NavItem[] = [];
-
-      if (isTenantAdmin) {
-        // Admin menu items
-        tenantItems.push(
-          { label: 'Permissions', path: `/tenants/${selectedTenant.id}/permissions` },
-          { label: 'Roles', path: `/tenants/${selectedTenant.id}/roles` },
-          { label: 'Resource Groups', path: `/tenants/${selectedTenant.id}/resource-groups` },
-          { label: 'Resources', path: `/tenants/${selectedTenant.id}/resources` },
-          { label: 'Grants', path: `/tenants/${selectedTenant.id}/grants` },
-          { label: 'Policies', path: `/tenants/${selectedTenant.id}/policies` },
-          { label: 'Policy Test', path: `/tenants/${selectedTenant.id}/test` },
-          { label: 'Audit Log', path: `/tenants/${selectedTenant.id}/audit-log` }
-        );
-      } else {
-        // Non-admin subjects: request access, and manage grants on paths
-        // where they have the admin permission (empty state on /access if
-        // they have none — cheap enough not to gate this entry on a fetch).
-        tenantItems.push(
-          { label: 'Requests', path: '/requests' },
-          { label: 'Access', path: '/access' }
-        );
-      }
+      const tenantItems: NavItem[] = isTenantAdmin
+        ? [
+            { label: 'Permissions', path: `/tenants/${selectedTenant.id}/permissions` },
+            { label: 'Roles', path: `/tenants/${selectedTenant.id}/roles` },
+            { label: 'Resource Groups', path: `/tenants/${selectedTenant.id}/resource-groups` },
+            { label: 'Resources', path: `/tenants/${selectedTenant.id}/resources` },
+            { label: 'Grants', path: `/tenants/${selectedTenant.id}/grants` },
+            { label: 'Grant Requests', path: `/tenants/${selectedTenant.id}/grant-requests` },
+            { label: 'Policies', path: `/tenants/${selectedTenant.id}/policies` },
+            { label: 'Policy Test', path: `/tenants/${selectedTenant.id}/test` },
+            { label: 'Audit Log', path: `/tenants/${selectedTenant.id}/audit-log` },
+          ]
+        : [
+            { label: 'My Access', path: '/me' },
+            ...(hasAdminPaths
+              ? [{ label: 'Resource Admin', path: `/tenants/${selectedTenant.id}/resource-admin` }]
+              : []),
+          ];
 
       sections.push({
         title: selectedTenant.name,
@@ -93,17 +88,8 @@ const Sidebar: React.FC = () => {
 
   const sections = getNavSections();
 
-  // Determine home/tenants path for the logo link
-  const logoPath = !selectedSubject ? '/' : (isTenantAdmin ? '/admin' : '/me');
-
   return (
     <div className="sidebar">
-      <div className="sidebar-header">
-        <Link to={logoPath} className="sidebar-logo">
-          <img src={bouncerLogo} alt="Bouncer" className="sidebar-logo-img" />
-        </Link>
-      </div>
-
       <nav className="sidebar-nav">
         {sections.map((section, idx) => (
           <div key={idx} className="sidebar-section">

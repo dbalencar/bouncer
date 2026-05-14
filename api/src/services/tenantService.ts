@@ -2,6 +2,51 @@ import { query, getClient } from '../config/database';
 import { Tenant, CreateTenantRequest } from '../types';
 import { getSubjectByUid } from './subjectService';
 
+// Tenants the subject can switch to in the sidebar dropdown.
+// platform-admins see everything; everyone else sees tenants they
+// admin or have at least one grant in.
+export const getAccessibleTenants = async (
+  subjectUid: string,
+  isPlatformAdmin: boolean
+): Promise<Tenant[]> => {
+  if (isPlatformAdmin) {
+    const all = await query('SELECT * FROM tenants ORDER BY name');
+    return all.rows;
+  }
+
+  const all = await query('SELECT * FROM tenants ORDER BY name');
+  const accessible: Tenant[] = [];
+  for (const tenant of all.rows) {
+    if (tenant.admin_uid === subjectUid) {
+      accessible.push(tenant);
+      continue;
+    }
+    if (!/^[a-zA-Z0-9_]+$/.test(tenant.schema_name)) continue;
+    const grants = await query(
+      `SELECT 1 FROM ${tenant.schema_name}.grants WHERE subject_uid = $1 LIMIT 1`,
+      [subjectUid]
+    );
+    if (grants.rows.length > 0) accessible.push(tenant);
+  }
+  return accessible;
+};
+
+// Throws a 403-typed error if the actor isn't a platform-admin. Used
+// by tenant create/delete routes.
+export const requirePlatformAdmin = async (actorUid: string | undefined): Promise<void> => {
+  if (!actorUid) {
+    const err: any = new Error('Authentication required');
+    err.status = 401;
+    throw err;
+  }
+  const subject = await getSubjectByUid(actorUid);
+  if (!subject || !subject.is_platform_admin) {
+    const err: any = new Error('Platform-admin privilege required');
+    err.status = 403;
+    throw err;
+  }
+};
+
 export const createTenant = async (request: CreateTenantRequest): Promise<Tenant> => {
   const client = await getClient();
   try {

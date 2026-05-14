@@ -1,15 +1,14 @@
-.access-manager h2 {
+.resource-admin h2 {
   margin-bottom: var(--space-2);
 }
 
-.access-manager .subtitle {
+.resource-admin-hint {
   color: var(--text-muted);
   margin-bottom: var(--space-6);
   font-size: 0.875rem;
 }
 
-.access-manager .subtitle code,
-.access-manager p code {
+.resource-admin-hint code {
   background-color: var(--bg-surface-2);
   padding: 0.125rem var(--space-2);
   border-radius: var(--radius-sm);
@@ -17,21 +16,21 @@
   font-size: 0.75rem;
 }
 
-.admin-path-section {
+.resource-admin .admin-path-section {
   background-color: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: var(--space-5);
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-5);
 }
 
-.admin-path-header {
+.resource-admin .admin-path-header {
   margin-bottom: var(--space-4);
   padding-bottom: var(--space-3);
   border-bottom: 1px solid var(--border);
 }
 
-.admin-path-header h3 {
+.resource-admin .admin-path-header h3 {
   display: flex;
   align-items: center;
   gap: var(--space-3);
@@ -39,64 +38,18 @@
   font-size: 1rem;
 }
 
-.admin-path {
+.resource-admin .admin-path {
   font-family: 'JetBrains Mono', 'SF Mono', 'Courier New', monospace;
   color: var(--text);
 }
 
-.admin-path-meta {
+.resource-admin .admin-path-meta {
   color: var(--text-muted);
   font-size: 0.8125rem;
   margin-top: var(--space-1);
 }
 
-.access-manager .grants-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: var(--space-4);
-}
-
-.access-manager .grant-card {
-  background-color: var(--bg-surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: var(--space-4);
-}
-
-.access-manager .grant-card h4 {
-  margin-bottom: var(--space-2);
-  font-size: 0.9375rem;
-}
-
-.access-manager .grant-meta {
-  color: var(--text-muted);
-  margin-bottom: var(--space-4);
-  font-size: 0.875rem;
-}
-
-.access-manager .grant-meta div {
-  margin-bottom: var(--space-1);
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  flex-wrap: wrap;
-}
-
-.access-manager .role-select {
-  flex: 1;
-  min-width: 140px;
-}
-
-.access-manager .grant-actions {
-  display: flex;
-  gap: var(--space-2);
-}
-
-.access-manager .grant-actions .button {
-  flex: 1;
-}
-
-.path-badge {
+.resource-admin .path-badge {
   font-size: 0.6875rem;
   padding: 0.125rem var(--space-2);
   border-radius: 999px;
@@ -105,12 +58,57 @@
   letter-spacing: 0.04em;
 }
 
-.path-badge.group    { background-color: var(--primary-soft); color: var(--primary); }
-.path-badge.resource { background-color: var(--success-soft); color: var(--success); }
-.path-badge.custom   { background-color: var(--bg-hover);     color: var(--text-muted); }
+.resource-admin .path-badge.group    { background-color: var(--primary-soft); color: var(--primary); }
+.resource-admin .path-badge.resource { background-color: var(--success-soft); color: var(--success); }
+.resource-admin .path-badge.custom   { background-color: var(--bg-hover);     color: var(--text-muted); }
 
-.access-manager .empty-state {
-  color: var(--text-muted);
-  font-size: 0.875rem;
+.resource-admin .grants-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-3);
+}
+
+.resource-admin .grant-card {
+  background-color: var(--bg-surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   padding: var(--space-4);
+}
+
+.resource-admin .grant-card h4 {
+  margin: 0 0 var(--space-2);
+  font-size: 0.9375rem;
+}
+
+.resource-admin .grant-meta {
+  color: var(--text-muted);
+  margin-bottom: var(--space-3);
+  font-size: 0.8125rem;
+}
+
+.resource-admin .grant-meta div {
+  margin-bottom: var(--space-1);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.resource-admin .role-select {
+  flex: 1;
+  min-width: 140px;
+}
+
+.resource-admin .grant-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.resource-admin .grant-actions .button {
+  flex: 1;
+}
+
+.resource-admin .empty-state {
+  color: var(--text-muted);
+  font-size: 0.8125rem;
 }

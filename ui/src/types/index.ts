@@ -4,6 +4,7 @@ export interface Subject {
   name: string;
   email: string;
   oidc_sub: string | null;
+  is_platform_admin: boolean;
   created_at: string;
   updated_at: string;
 }

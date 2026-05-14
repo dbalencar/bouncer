@@ -1,0 +1,107 @@
+.new-tenant-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-4);
+}
+
+.new-tenant-dialog {
+  width: 100%;
+  max-width: 480px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+}
+
+.new-tenant-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border);
+}
+
+.new-tenant-header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.new-tenant-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 var(--space-2);
+}
+
+.new-tenant-close:hover {
+  color: var(--text);
+}
+
+.new-tenant-body {
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.new-tenant-subject {
+  position: relative;
+}
+
+.new-tenant-subject-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-top: 4px;
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 10;
+  box-shadow: var(--shadow);
+}
+
+.new-tenant-subject-item {
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.new-tenant-subject-item:hover {
+  background-color: var(--bg-hover);
+}
+
+.new-tenant-subject-item.no-results {
+  color: var(--text-muted);
+  cursor: default;
+}
+
+.new-tenant-subject-username {
+  font-weight: 500;
+}
+
+.new-tenant-subject-details {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.new-tenant-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
