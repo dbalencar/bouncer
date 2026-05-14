@@ -4,8 +4,8 @@ import { useSubject } from '../../context/SubjectContext';
 import { useAuth } from '../../context/AuthContext';
 import { subjectApi } from '../../services/api';
 import { Subject } from '../../types';
-import Breadcrumb from '../Breadcrumb/Breadcrumb';
 import Sidebar from '../Sidebar/Sidebar';
+import TenantPicker from '../Sidebar/TenantPicker';
 import './Layout.css';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -54,7 +54,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <div className="main-content">
         <header className="top-bar">
           <div className="top-bar-left">
-            <Breadcrumb />
+            {selectedSubject && <TenantPicker />}
           </div>
           <div className="top-bar-right">
             {selectedSubject ? (

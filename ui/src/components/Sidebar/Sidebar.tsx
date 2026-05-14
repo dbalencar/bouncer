@@ -4,7 +4,6 @@ import { useTenant } from '../../context/TenantContext';
 import { useSubject } from '../../context/SubjectContext';
 import { grantApi } from '../../services/api';
 import bouncerLogo from '../../assets/bouncer.png';
-import TenantPicker from './TenantPicker';
 import './Sidebar.css';
 
 interface NavItem {
@@ -99,8 +98,6 @@ const Sidebar: React.FC = () => {
           <img src={bouncerLogo} alt="Bouncer" className="sidebar-logo-img" />
         </Link>
       </div>
-
-      {selectedSubject && <TenantPicker />}
 
       <nav className="sidebar-nav">
         {sections.map((section, idx) => (
