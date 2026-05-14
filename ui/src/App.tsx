@@ -5,7 +5,6 @@ import { AuthProvider } from './context/AuthContext';
 import Layout from './components/Layout/Layout';
 import AuthCallback from './components/AuthCallback/AuthCallback';
 import Home from './components/Home/Home';
-import TenantList from './components/TenantList/TenantList';
 import PolicyList from './components/PolicyList/PolicyList';
 import PolicyTest from './components/PolicyTest/PolicyTest';
 import SubjectList from './components/SubjectList/SubjectList';
@@ -14,6 +13,7 @@ import RoleList from './components/RoleList/RoleList';
 import ResourceGroupList from './components/ResourceGroupList/ResourceGroupList';
 import ResourceList from './components/ResourceList/ResourceList';
 import GrantList from './components/GrantList/GrantList';
+import GrantRequestApproval from './components/GrantRequestApproval/GrantRequestApproval';
 import AuditLogList from './components/AuditLogList/AuditLogList';
 import Me from './components/Me/Me';
 import Admin from './components/Admin/Admin';
@@ -30,13 +30,13 @@ function App() {
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/callback" element={<AuthCallback />} />
-                <Route path="/tenants" element={<TenantList />} />
                 <Route path="/tenants/:tenantId/policies" element={<PolicyList />} />
                 <Route path="/tenants/:tenantId/permissions" element={<PermissionList />} />
                 <Route path="/tenants/:tenantId/roles" element={<RoleList />} />
                 <Route path="/tenants/:tenantId/resource-groups" element={<ResourceGroupList />} />
                 <Route path="/tenants/:tenantId/resources" element={<ResourceList />} />
                 <Route path="/tenants/:tenantId/grants" element={<GrantList />} />
+                <Route path="/tenants/:tenantId/grant-requests" element={<GrantRequestApproval />} />
                 <Route path="/tenants/:tenantId/audit-log" element={<AuditLogList />} />
                 <Route path="/tenants/:tenantId/test" element={<PolicyTest />} />
                 <Route path="/subjects" element={<SubjectList />} />

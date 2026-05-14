@@ -24,6 +24,29 @@ A 3-tier application for authorization policy management and evaluation using OP
   the `admin` permission on a path can view, edit and delete grants on
   that path without being tenant admins
 
+## Subject taxonomy
+
+Bouncer recognizes four (non-exclusive) kinds of subjects:
+
+1. **platform-admin** — `common.subjects.is_platform_admin = TRUE`. Can
+   create and delete tenants from the **+** button next to the tenant
+   picker in the sidebar. Sees every tenant in the dropdown. Seeded:
+   the `admin` user.
+2. **tenant-admin** — `tenants.admin_uid = subject.uid`. Sees the full
+   admin menu (Permissions, Roles, …, Audit Log) when their tenant is
+   selected in the sidebar dropdown.
+3. **resource-admin** — has a role grant whose role contains a
+   permission named `admin` on some path. Can manage existing grants
+   on resources/groups under that path via the `/access` page.
+4. **regular-user** — anyone else. Sees only the tenants they have a
+   grant in (or admin); uses `/requests` and `/access`.
+
+To promote another subject to platform-admin in dev:
+
+```sql
+UPDATE common.subjects SET is_platform_admin = TRUE WHERE username = 'sec';
+```
+
 ## Authentication
 
 Bouncer ships with two interchangeable auth modes selected by env var.

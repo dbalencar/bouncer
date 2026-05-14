@@ -3,8 +3,11 @@ import {
   createTenant,
   getAllTenants,
   getTenantById,
-  deleteTenant
+  deleteTenant,
+  getAccessibleTenants,
+  requirePlatformAdmin,
 } from '../services/tenantService';
+import { getSubjectByUid } from '../services/subjectService';
 import { CreateTenantRequest } from '../types';
 
 const router = Router();
@@ -17,6 +20,26 @@ router.get('/', async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error getting tenants:', error);
     res.status(500).json({ error: 'Failed to get tenants' });
+  }
+});
+
+// GET /tenants/accessible?subject_uid=<uid>
+// Tenants the subject can switch to in the sidebar dropdown.
+router.get('/accessible', async (req: Request, res: Response) => {
+  try {
+    const subjectUid = req.query.subject_uid ? String(req.query.subject_uid) : '';
+    if (!subjectUid) {
+      return res.status(400).json({ error: 'subject_uid is required' });
+    }
+    const subject = await getSubjectByUid(subjectUid);
+    if (!subject) {
+      return res.status(404).json({ error: 'Subject not found' });
+    }
+    const tenants = await getAccessibleTenants(subjectUid, subject.is_platform_admin);
+    res.json(tenants);
+  } catch (error) {
+    console.error('Error getting accessible tenants:', error);
+    res.status(500).json({ error: 'Failed to get accessible tenants' });
   }
 });
 
@@ -34,7 +57,7 @@ router.get('/:id', async (req: Request, res: Response) => {
   }
 });
 
-// POST /tenants - Create new tenant
+// POST /tenants - Create new tenant. Requires platform-admin actor.
 router.post('/', async (req: Request, res: Response) => {
   try {
     const request: CreateTenantRequest = req.body;
@@ -45,6 +68,12 @@ router.post('/', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Admin subject is required' });
     }
 
+    try {
+      await requirePlatformAdmin(req.actor?.subject_uid);
+    } catch (err: any) {
+      return res.status(err.status || 403).json({ error: err.message });
+    }
+
     const tenant = await createTenant(request);
     res.status(201).json(tenant);
   } catch (error) {
@@ -53,9 +82,14 @@ router.post('/', async (req: Request, res: Response) => {
   }
 });
 
-// DELETE /tenants/:id - Delete tenant
+// DELETE /tenants/:id - Delete tenant. Requires platform-admin actor.
 router.delete('/:id', async (req: Request, res: Response) => {
   try {
+    try {
+      await requirePlatformAdmin(req.actor?.subject_uid);
+    } catch (err: any) {
+      return res.status(err.status || 403).json({ error: err.message });
+    }
     await deleteTenant(req.params.id);
     res.status(204).send();
   } catch (error) {

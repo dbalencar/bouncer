@@ -1,27 +1,31 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { grantRequestApi } from '../../services/api';
 import { useSubject } from '../../context/SubjectContext';
+import { useTenant } from '../../context/TenantContext';
 import { GrantRequest } from '../../types';
 import './GrantRequestApproval.css';
 
-interface GrantRequestApprovalProps {
-  tenantId: string;
-  schemaName: string;
-}
-
-const GrantRequestApproval: React.FC<GrantRequestApprovalProps> = ({ tenantId, schemaName }) => {
+const GrantRequestApproval: React.FC = () => {
+  const navigate = useNavigate();
   const { selectedSubject } = useSubject();
+  const { selectedTenant } = useTenant();
+  const schemaName = selectedTenant?.schema_name;
   const [requests, setRequests] = useState<GrantRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (selectedSubject) {
+    if (selectedSubject && schemaName) {
       loadRequests();
+    } else {
+      setLoading(false);
     }
-  }, [schemaName, selectedSubject]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [schemaName, selectedSubject?.uid]);
 
   const loadRequests = async () => {
+    if (!schemaName) return;
     try {
       setLoading(true);
       const data = await grantRequestApi.getByTenant(schemaName, 'pending');
@@ -36,7 +40,7 @@ const GrantRequestApproval: React.FC<GrantRequestApprovalProps> = ({ tenantId, s
   };
 
   const handleApprove = async (uid: string) => {
-    if (!selectedSubject) return;
+    if (!selectedSubject || !schemaName) return;
 
     try {
       await grantRequestApi.approve(schemaName, uid, selectedSubject.uid);
@@ -47,7 +51,7 @@ const GrantRequestApproval: React.FC<GrantRequestApprovalProps> = ({ tenantId, s
   };
 
   const handleReject = async (uid: string) => {
-    if (!selectedSubject) return;
+    if (!selectedSubject || !schemaName) return;
 
     try {
       await grantRequestApi.reject(schemaName, uid, selectedSubject.uid);
@@ -72,6 +76,18 @@ const GrantRequestApproval: React.FC<GrantRequestApprovalProps> = ({ tenantId, s
 
   if (!selectedSubject) {
     return <div className="grant-request-approval">Please log in to view grant requests.</div>;
+  }
+
+  if (!selectedTenant) {
+    return (
+      <div className="grant-request-approval">
+        <h3>Grant Requests</h3>
+        <p className="no-requests">No tenant selected. Pick one from the Admin page.</p>
+        <button onClick={() => navigate('/admin')} className="button button-primary">
+          Go to Admin
+        </button>
+      </div>
+    );
   }
 
   if (loading) return <div className="loading">Loading...</div>;

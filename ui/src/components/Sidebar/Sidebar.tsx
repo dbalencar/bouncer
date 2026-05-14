@@ -5,6 +5,7 @@ import { useSubject } from '../../context/SubjectContext';
 import { tenantApi } from '../../services/api';
 import { Tenant } from '../../types';
 import bouncerLogo from '../../assets/bouncer.png';
+import TenantPicker from './TenantPicker';
 import './Sidebar.css';
 
 interface NavItem {
@@ -24,20 +25,20 @@ const Sidebar: React.FC = () => {
   const [tenants, setTenants] = useState<Tenant[]>([]);
 
   useEffect(() => {
-    loadTenants();
-  }, []);
-
-  const loadTenants = async () => {
-    try {
-      const data = await tenantApi.getAll();
-      setTenants(data);
-    } catch (err) {
-      console.error('Failed to load tenants:', err);
+    if (!selectedSubject) {
+      setTenants([]);
+      return;
     }
-  };
+    tenantApi.getAll().then(setTenants).catch((err) => {
+      console.error('Failed to load tenants:', err);
+    });
+  }, [selectedSubject?.uid]);
 
-  const isTenantAdmin = !!selectedSubject &&
-    tenants.some(t => t.admin_uid === selectedSubject.uid);
+  // Tenant-admin against the *currently selected* tenant (not "any
+  // tenant"). The previous global check leaked admin menus into
+  // tenants the subject merely had a grant on.
+  const isTenantAdmin = !!selectedSubject && !!selectedTenant &&
+    selectedTenant.admin_uid === selectedSubject.uid;
 
   const getNavSections = (): NavSection[] => {
     const sections: NavSection[] = [];
@@ -48,34 +49,23 @@ const Sidebar: React.FC = () => {
       return sections;
     }
 
-    // Logged in: Tenants points to different pages based on role
-    const tenantsPath = isTenantAdmin ? '/admin' : '/me';
-    const generalItems: NavItem[] = [
-      { label: 'Tenants', path: tenantsPath },
-    ];
-
-    sections.push({ items: generalItems });
-
-    // Tenant-scoped menu when a tenant is selected
+    // Tenant-scoped menu when a tenant is selected via the picker
     if (selectedTenant) {
       const tenantItems: NavItem[] = [];
 
       if (isTenantAdmin) {
-        // Admin menu items
         tenantItems.push(
           { label: 'Permissions', path: `/tenants/${selectedTenant.id}/permissions` },
           { label: 'Roles', path: `/tenants/${selectedTenant.id}/roles` },
           { label: 'Resource Groups', path: `/tenants/${selectedTenant.id}/resource-groups` },
           { label: 'Resources', path: `/tenants/${selectedTenant.id}/resources` },
           { label: 'Grants', path: `/tenants/${selectedTenant.id}/grants` },
+          { label: 'Grant Requests', path: `/tenants/${selectedTenant.id}/grant-requests` },
           { label: 'Policies', path: `/tenants/${selectedTenant.id}/policies` },
           { label: 'Policy Test', path: `/tenants/${selectedTenant.id}/test` },
           { label: 'Audit Log', path: `/tenants/${selectedTenant.id}/audit-log` }
         );
       } else {
-        // Non-admin subjects: request access, and manage grants on paths
-        // where they have the admin permission (empty state on /access if
-        // they have none — cheap enough not to gate this entry on a fetch).
         tenantItems.push(
           { label: 'Requests', path: '/requests' },
           { label: 'Access', path: '/access' }
@@ -87,6 +77,18 @@ const Sidebar: React.FC = () => {
         items: tenantItems,
       });
     }
+
+    // Personal nav lives at the bottom; available to every logged-in
+    // subject regardless of tenant selection.
+    sections.push({
+      title: 'You',
+      items: [
+        { label: 'My Access', path: '/me' },
+        ...(selectedSubject.is_platform_admin || tenants.some((t) => t.admin_uid === selectedSubject.uid)
+          ? [{ label: 'Admin Dashboard', path: '/admin' }]
+          : []),
+      ],
+    });
 
     return sections;
   };
@@ -103,6 +105,8 @@ const Sidebar: React.FC = () => {
           <img src={bouncerLogo} alt="Bouncer" className="sidebar-logo-img" />
         </Link>
       </div>
+
+      {selectedSubject && <TenantPicker />}
 
       <nav className="sidebar-nav">
         {sections.map((section, idx) => (

@@ -1,70 +1,55 @@
-.admin-info {
-  margin-bottom: var(--space-8);
+.admin h2 {
+  margin-bottom: var(--space-6);
 }
 
-.admin-info h3 {
+.admin .context-card {
+  margin-bottom: var(--space-5);
+}
+
+.admin .context-card h3 {
   border-bottom: 1px solid var(--border);
   padding-bottom: var(--space-2);
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-3);
+  font-size: 0.9375rem;
 }
 
-.subject-details {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--space-3);
-}
-
-.subject-details p {
-  font-size: 0.875rem;
-  margin: 0;
-}
-
-.admin-tenants h3 {
-  margin-bottom: var(--space-4);
-}
-
-.tenant-card h3 { margin-bottom: var(--space-3); }
-
-.tenant-card p {
-  font-size: 0.875rem;
-  margin-bottom: var(--space-1);
-}
-
-.tenant-card .button {
-  margin-top: var(--space-4);
-}
-
-.pending-requests {
-  margin-top: var(--space-4);
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--border);
-}
-
-.pending-requests h4 {
-  color: var(--warning);
+.admin-hint {
+  color: var(--text-muted);
   font-size: 0.8125rem;
   margin-bottom: var(--space-3);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 
-.request-item {
+.admin-tenant-names {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.admin-tenant-names li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
   background-color: var(--bg-surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: var(--space-3);
-  margin-bottom: var(--space-2);
 }
 
-.request-item p {
+.admin-tenant-name {
+  font-weight: 500;
+}
+
+.admin-tenant-schema {
+  font-family: 'JetBrains Mono', 'SF Mono', 'Courier New', monospace;
   font-size: 0.75rem;
-  margin-bottom: var(--space-1);
+  color: var(--text-muted);
 }
 
-.request-actions {
-  display: flex;
-  gap: var(--space-2);
-  margin-top: var(--space-3);
+.no-tenants {
+  color: var(--text-muted);
+  font-size: 0.875rem;
 }
-
-.request-actions .button { flex: 1; }

@@ -47,6 +47,13 @@ export const tenantApi = {
     return response.data;
   },
 
+  getAccessible: async (subjectUid: string): Promise<Tenant[]> => {
+    const response = await api.get('/tenants/accessible', {
+      params: { subject_uid: subjectUid },
+    });
+    return response.data;
+  },
+
   getById: async (id: string): Promise<Tenant> => {
     const response = await api.get(`/tenants/${id}`);
     return response.data;
