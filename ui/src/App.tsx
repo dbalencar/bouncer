@@ -16,6 +16,7 @@ import GrantList from './components/GrantList/GrantList';
 import GrantRequestApproval from './components/GrantRequestApproval/GrantRequestApproval';
 import AuditLogList from './components/AuditLogList/AuditLogList';
 import Me from './components/Me/Me';
+import ResourceAdmin from './components/ResourceAdmin/ResourceAdmin';
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
                 <Route path="/tenants/:tenantId/resources" element={<ResourceList />} />
                 <Route path="/tenants/:tenantId/grants" element={<GrantList />} />
                 <Route path="/tenants/:tenantId/grant-requests" element={<GrantRequestApproval />} />
+                <Route path="/tenants/:tenantId/resource-admin" element={<ResourceAdmin />} />
                 <Route path="/tenants/:tenantId/audit-log" element={<AuditLogList />} />
                 <Route path="/tenants/:tenantId/test" element={<PolicyTest />} />
                 <Route path="/subjects" element={<SubjectList />} />

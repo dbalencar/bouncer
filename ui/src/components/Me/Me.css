@@ -17,21 +17,6 @@
   font-size: 0.9375rem;
 }
 
-.me-section-hint {
-  color: var(--text-muted);
-  font-size: 0.8125rem;
-  margin-bottom: var(--space-4);
-}
-
-.me-section-hint code,
-.me p code {
-  background-color: var(--bg-surface-2);
-  padding: 0.125rem var(--space-2);
-  border-radius: var(--radius-sm);
-  font-family: 'JetBrains Mono', 'SF Mono', 'Courier New', monospace;
-  font-size: 0.75rem;
-}
-
 .no-access-text {
   color: var(--text-muted);
   font-style: italic;
@@ -115,104 +100,6 @@
 .me-request-form-header h4 {
   margin: 0;
   font-size: 0.9375rem;
-}
-
-/* Section 3: paths you administer */
-.admin-path-section {
-  padding: var(--space-4) 0;
-  border-top: 1px solid var(--border);
-}
-
-.admin-path-section:first-of-type {
-  border-top: none;
-  padding-top: 0;
-}
-
-.admin-path-header {
-  margin-bottom: var(--space-3);
-}
-
-.admin-path-header h4 {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  margin: 0;
-  font-size: 0.9375rem;
-}
-
-.admin-path {
-  font-family: 'JetBrains Mono', 'SF Mono', 'Courier New', monospace;
-  color: var(--text);
-}
-
-.admin-path-meta {
-  color: var(--text-muted);
-  font-size: 0.8125rem;
-  margin-top: var(--space-1);
-}
-
-.path-badge {
-  font-size: 0.6875rem;
-  padding: 0.125rem var(--space-2);
-  border-radius: 999px;
-  text-transform: uppercase;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-}
-
-.path-badge.group    { background-color: var(--primary-soft); color: var(--primary); }
-.path-badge.resource { background-color: var(--success-soft); color: var(--success); }
-.path-badge.custom   { background-color: var(--bg-hover);     color: var(--text-muted); }
-
-.me .grants-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: var(--space-3);
-}
-
-.me .grant-card {
-  background-color: var(--bg-surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: var(--space-4);
-}
-
-.me .grant-card h5 {
-  margin: 0 0 var(--space-2);
-  font-size: 0.9375rem;
-}
-
-.me .grant-meta {
-  color: var(--text-muted);
-  margin-bottom: var(--space-3);
-  font-size: 0.8125rem;
-}
-
-.me .grant-meta div {
-  margin-bottom: var(--space-1);
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  flex-wrap: wrap;
-}
-
-.me .role-select {
-  flex: 1;
-  min-width: 140px;
-}
-
-.me .grant-actions {
-  display: flex;
-  gap: var(--space-2);
-}
-
-.me .grant-actions .button {
-  flex: 1;
-}
-
-.empty-state {
-  color: var(--text-muted);
-  font-size: 0.8125rem;
 }
 
 .no-context {

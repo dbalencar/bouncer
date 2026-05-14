@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTenant } from '../../context/TenantContext';
 import { useSubject } from '../../context/SubjectContext';
+import { grantApi } from '../../services/api';
 import bouncerLogo from '../../assets/bouncer.png';
 import TenantPicker from './TenantPicker';
 import './Sidebar.css';
@@ -20,26 +21,43 @@ const Sidebar: React.FC = () => {
   const location = useLocation();
   const { selectedTenant } = useTenant();
   const { selectedSubject } = useSubject();
+  const [hasAdminPaths, setHasAdminPaths] = useState(false);
 
-  // Tenant-admin against the *currently selected* tenant (not "any
-  // tenant"). A subject is admin only of the tenants whose admin_uid
-  // matches theirs; the menu should reflect the selected tenant.
+  // Tenant-admin against the *currently selected* tenant.
   const isTenantAdmin = !!selectedSubject && !!selectedTenant &&
     selectedTenant.admin_uid === selectedSubject.uid;
+
+  // Fetch the subject's admin paths on this tenant to know whether to
+  // surface the "Resource Admin" entry. Tenant-admins don't need it
+  // (they have richer affordances on the Grants page).
+  useEffect(() => {
+    if (!selectedSubject || !selectedTenant || isTenantAdmin) {
+      setHasAdminPaths(false);
+      return;
+    }
+    let cancelled = false;
+    grantApi
+      .getAdminPaths(selectedTenant.id, selectedSubject.uid)
+      .then((paths) => {
+        if (!cancelled) setHasAdminPaths(paths.length > 0);
+      })
+      .catch((err) => {
+        console.error('Failed to fetch admin paths for sidebar:', err);
+        if (!cancelled) setHasAdminPaths(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedSubject?.uid, selectedTenant?.id, isTenantAdmin]);
 
   const getNavSections = (): NavSection[] => {
     const sections: NavSection[] = [];
 
-    // Logged out: just Home
     if (!selectedSubject) {
       sections.push({ items: [{ label: 'Home', path: '/' }] });
       return sections;
     }
 
-    // Tenant-scoped menu when a tenant is selected via the picker.
-    // Tenant-admins see the full admin menu; everyone else gets a
-    // single "My Access" entry that aggregates grants / requests /
-    // path-admin into one page (see Me.tsx).
     if (selectedTenant) {
       const tenantItems: NavItem[] = isTenantAdmin
         ? [
@@ -53,7 +71,12 @@ const Sidebar: React.FC = () => {
             { label: 'Policy Test', path: `/tenants/${selectedTenant.id}/test` },
             { label: 'Audit Log', path: `/tenants/${selectedTenant.id}/audit-log` },
           ]
-        : [{ label: 'My Access', path: '/me' }];
+        : [
+            { label: 'My Access', path: '/me' },
+            ...(hasAdminPaths
+              ? [{ label: 'Resource Admin', path: `/tenants/${selectedTenant.id}/resource-admin` }]
+              : []),
+          ];
 
       sections.push({
         title: selectedTenant.name,
