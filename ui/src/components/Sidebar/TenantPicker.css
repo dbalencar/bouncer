@@ -115,8 +115,14 @@
   overflow-y: auto;
 }
 
+.tenant-picker-row-item {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-1);
+}
+
 .tenant-picker-item {
-  width: 100%;
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -143,6 +149,27 @@
 
 .tenant-picker-item-check {
   color: var(--primary);
+}
+
+.tenant-picker-delete {
+  width: 30px;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.1s ease, color 0.1s ease;
+  opacity: 0.5;
+}
+
+.tenant-picker-row-item:hover .tenant-picker-delete {
+  opacity: 1;
+}
+
+.tenant-picker-delete:hover {
+  background-color: var(--danger-soft);
+  color: var(--danger);
 }
 
 .tenant-picker-clear {

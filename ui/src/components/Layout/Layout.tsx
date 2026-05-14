@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSubject } from '../../context/SubjectContext';
 import { useAuth } from '../../context/AuthContext';
-import { subjectApi, tenantApi } from '../../services/api';
-import { Subject, Tenant } from '../../types';
+import { subjectApi } from '../../services/api';
+import { Subject } from '../../types';
 import Breadcrumb from '../Breadcrumb/Breadcrumb';
 import Sidebar from '../Sidebar/Sidebar';
 import './Layout.css';
@@ -13,7 +13,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { selectedSubject } = useSubject();
   const { mode, ready, login, logout } = useAuth();
   const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [tenants, setTenants] = useState<Tenant[]>([]);
   const [isLoadingSubjects, setIsLoadingSubjects] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -21,7 +20,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (mode === 'mock') {
       loadSubjects();
     }
-    loadTenants();
   }, [mode]);
 
   const loadSubjects = async () => {
@@ -36,19 +34,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     }
   };
 
-  const loadTenants = async () => {
-    try {
-      const data = await tenantApi.getAll();
-      setTenants(data);
-    } catch (err) {
-      console.error('Failed to load tenants:', err);
-    }
-  };
-
   const handleMockLogin = async (subject: Subject) => {
     await login(subject);
-    const isAdmin = tenants.some((t) => t.admin_uid === subject.uid);
-    navigate(isAdmin ? '/admin' : '/me');
+    navigate('/me');
     setIsDropdownOpen(false);
   };
 

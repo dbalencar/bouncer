@@ -69,8 +69,6 @@ const Breadcrumb: React.FC = () => {
         label = 'Subjects';
       } else if (segment === 'me') {
         label = 'Me';
-      } else if (segment === 'admin') {
-        label = 'Admin';
       } else if (segment === 'requests') {
         label = 'Requests';
       } else if (segment === 'policies') {

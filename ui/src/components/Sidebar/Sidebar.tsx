@@ -1,9 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTenant } from '../../context/TenantContext';
 import { useSubject } from '../../context/SubjectContext';
-import { tenantApi } from '../../services/api';
-import { Tenant } from '../../types';
 import bouncerLogo from '../../assets/bouncer.png';
 import TenantPicker from './TenantPicker';
 import './Sidebar.css';
@@ -22,21 +20,10 @@ const Sidebar: React.FC = () => {
   const location = useLocation();
   const { selectedTenant } = useTenant();
   const { selectedSubject } = useSubject();
-  const [tenants, setTenants] = useState<Tenant[]>([]);
-
-  useEffect(() => {
-    if (!selectedSubject) {
-      setTenants([]);
-      return;
-    }
-    tenantApi.getAll().then(setTenants).catch((err) => {
-      console.error('Failed to load tenants:', err);
-    });
-  }, [selectedSubject?.uid]);
 
   // Tenant-admin against the *currently selected* tenant (not "any
-  // tenant"). The previous global check leaked admin menus into
-  // tenants the subject merely had a grant on.
+  // tenant"). A subject is admin only of the tenants whose admin_uid
+  // matches theirs; the menu should reflect the selected tenant.
   const isTenantAdmin = !!selectedSubject && !!selectedTenant &&
     selectedTenant.admin_uid === selectedSubject.uid;
 
@@ -82,12 +69,7 @@ const Sidebar: React.FC = () => {
     // subject regardless of tenant selection.
     sections.push({
       title: 'You',
-      items: [
-        { label: 'My Access', path: '/me' },
-        ...(selectedSubject.is_platform_admin || tenants.some((t) => t.admin_uid === selectedSubject.uid)
-          ? [{ label: 'Admin Dashboard', path: '/admin' }]
-          : []),
-      ],
+      items: [{ label: 'My Access', path: '/me' }],
     });
 
     return sections;
@@ -95,8 +77,7 @@ const Sidebar: React.FC = () => {
 
   const sections = getNavSections();
 
-  // Determine home/tenants path for the logo link
-  const logoPath = !selectedSubject ? '/' : (isTenantAdmin ? '/admin' : '/me');
+  const logoPath = selectedSubject ? '/me' : '/';
 
   return (
     <div className="sidebar">

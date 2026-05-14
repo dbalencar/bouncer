@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { subjectApi, tenantApi } from '../../services/api';
+import { subjectApi } from '../../services/api';
 import { useSubject } from '../../context/SubjectContext';
-import { Subject, Tenant } from '../../types';
+import { Subject } from '../../types';
 import './SubjectList.css';
 
 const SubjectList: React.FC = () => {
   const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { setSubject } = useSubject();
@@ -15,7 +14,6 @@ const SubjectList: React.FC = () => {
 
   useEffect(() => {
     loadSubjects();
-    loadTenants();
   }, []);
 
   const loadSubjects = async () => {
@@ -32,29 +30,9 @@ const SubjectList: React.FC = () => {
     }
   };
 
-  const loadTenants = async () => {
-    try {
-      const data = await tenantApi.getAll();
-      setTenants(data);
-    } catch (err) {
-      console.error('Failed to load tenants:', err);
-    }
-  };
-
   const handleActAs = (subject: Subject) => {
     setSubject(subject);
-    // Wait for tenants to load before checking admin status
-    // If tenants aren't loaded yet, default to /me
-    if (tenants.length > 0) {
-      const isAdmin = tenants.some(t => t.admin_uid === subject.uid);
-      navigate(isAdmin ? '/admin' : '/me');
-    } else {
-      // Load tenants first, then navigate
-      loadTenants().then(() => {
-        const isAdmin = tenants.some(t => t.admin_uid === subject.uid);
-        navigate(isAdmin ? '/admin' : '/me');
-      });
-    }
+    navigate('/me');
   };
 
   if (loading) return <div className="loading">Loading...</div>;

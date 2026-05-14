@@ -47,7 +47,10 @@ const AccessManager: React.FC = () => {
         if (cancelled) return;
         if (tenantAdmin) {
           setIsTenantAdmin(true);
-          navigate('/admin');
+          // Tenant admins don't need the /access page — they already
+          // manage grants on every path. Bounce them to the tenant's
+          // Grants page.
+          navigate(`/tenants/${selectedTenant.id}/grants`, { replace: true });
           return;
         }
         await loadAll();

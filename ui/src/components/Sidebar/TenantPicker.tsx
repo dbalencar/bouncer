@@ -70,6 +70,31 @@ const TenantPicker: React.FC = () => {
     setSearch('');
   };
 
+  const handleDelete = async (tenant: Tenant, e: React.MouseEvent) => {
+    e.stopPropagation(); // don't trigger row select
+    if (
+      !window.confirm(
+        `Delete tenant "${tenant.name}"? This drops the tenant schema and all its data.`
+      )
+    ) {
+      return;
+    }
+    try {
+      await tenantApi.delete(tenant.id);
+      if (selectedTenant?.id === tenant.id) {
+        clearTenant();
+      }
+      await loadTenants();
+    } catch (err: any) {
+      console.error('Failed to delete tenant:', err);
+      alert(
+        err.response?.data?.error ||
+          err.response?.data?.message ||
+          'Failed to delete tenant.'
+      );
+    }
+  };
+
   const handleTenantCreated = (tenant: Tenant) => {
     setShowNewDialog(false);
     setTenant(tenant);
@@ -130,7 +155,7 @@ const TenantPicker: React.FC = () => {
           ) : (
             <ul className="tenant-picker-list">
               {filtered.map((tenant) => (
-                <li key={tenant.id}>
+                <li key={tenant.id} className="tenant-picker-row-item">
                   <button
                     type="button"
                     className={`tenant-picker-item ${
@@ -143,6 +168,17 @@ const TenantPicker: React.FC = () => {
                       <span className="tenant-picker-item-check">✓</span>
                     )}
                   </button>
+                  {isPlatformAdmin && (
+                    <button
+                      type="button"
+                      className="tenant-picker-delete"
+                      title={`Delete ${tenant.name}`}
+                      aria-label={`Delete ${tenant.name}`}
+                      onClick={(e) => handleDelete(tenant, e)}
+                    >
+                      🗑
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>
